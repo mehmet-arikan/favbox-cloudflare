@@ -1,31 +1,35 @@
-// JWT token basit implementasyon
-function generateToken(username) {
-    const payload = {
-        username: username,
-        exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 saat
-    };
-    return btoa(JSON.stringify(payload));
-}
-
-function verifyToken(token) {
-    try {
-        const payload = JSON.parse(atob(token));
-        return payload.exp > Math.floor(Date.now() / 1000);
-    } catch {
-        return false;
-    }
-}
-
 export async function onRequestPost(context) {
     try {
         const { username, password } = await context.request.json();
         
-        // Environment variables'dan kullanıcı bilgilerini al
+        // Environment Variables'dan güvenli şekilde al
         const correctUsername = context.env.AUTH_USERNAME;
         const correctPassword = context.env.AUTH_PASSWORD;
+        
+        // Güvenlik kontrolü
+        if (!correctUsername || !correctPassword) {
+            console.error('Environment variables not set');
+            return new Response(JSON.stringify({ 
+                success: false, 
+                message: 'Server configuration error' 
+            }), {
+                status: 500,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                }
+            });
+        }
 
         if (username === correctUsername && password === correctPassword) {
-            const token = generateToken(username);
+            // JWT token oluştur (daha güvenli)
+            const payload = {
+                username: username,
+                iat: Math.floor(Date.now() / 1000),
+                exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 saat
+            };
+            
+            const token = btoa(JSON.stringify(payload));
             
             return new Response(JSON.stringify({ 
                 success: true, 
@@ -50,6 +54,7 @@ export async function onRequestPost(context) {
             });
         }
     } catch (error) {
+        console.error('Auth error:', error);
         return new Response(JSON.stringify({ 
             success: false, 
             message: 'Server error' 
@@ -63,15 +68,13 @@ export async function onRequestPost(context) {
     }
 }
 
-// CORS preflight
-export async function onRequestOptions(context) {
+export async function onRequestOptions() {
     return new Response(null, {
         status: 204,
         headers: {
             'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-            'Access-Control-Max-Age': '86400',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization'
         }
     });
 }
