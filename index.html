@@ -77,12 +77,27 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
+        .glass-effect-subtle {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
         .bookmark-card {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .bookmark-card:hover {
             transform: translateY(-8px) scale(1.02);
+        }
+        
+        .bookmark-card:hover .card-actions {
+            opacity: 1;
+        }
+        
+        .card-actions {
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         
         .masonry {
@@ -218,6 +233,14 @@
             const isAuthenticated = ref(!!localStorage.getItem('favbox-auth-token'));
             const isDarkMode = ref(localStorage.getItem('favbox-theme') === 'dark' || 
                 (!localStorage.getItem('favbox-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches));
+                
+            const showSettingsModal = ref(false);
+            const settings = ref({
+                proxyEnabled: JSON.parse(localStorage.getItem('favbox-proxy-enabled') || 'false'),
+                proxyUrl: localStorage.getItem('favbox-proxy-url') || '',
+                showDescriptions: JSON.parse(localStorage.getItem('favbox-show-descriptions') || 'true')
+            });
+            const settingsForm = ref({ ...settings.value });
             
             const bookmarks = ref([]);
             const filteredBookmarks = ref([]);
@@ -369,6 +392,29 @@
                 isDarkMode.value = !isDarkMode.value;
                 localStorage.setItem('favbox-theme', isDarkMode.value ? 'dark' : 'light');
                 initializeTheme();
+            };
+            
+            const openSettingsModal = () => {
+                settingsForm.value = { ...settings.value };
+                showSettingsModal.value = true;
+            };
+            
+            const closeSettingsModal = () => showSettingsModal.value = false;
+
+            const saveSettings = () => {
+                Object.keys(settingsForm.value).forEach(key => {
+                    localStorage.setItem(`favbox-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`, 
+                                       JSON.stringify(settingsForm.value[key]));
+                });
+                settings.value = { ...settingsForm.value };
+                showSettingsModal.value = false;
+            };
+
+            const getProxiedUrl = (url) => {
+                if (settings.value.proxyEnabled && settings.value.proxyUrl) {
+                    return settings.value.proxyUrl + url;
+                }
+                return url;
             };
             
             const setViewMode = (mode) => {
@@ -558,7 +604,7 @@
                     const domain = new URL(url).hostname;
                     return `https://icons.duckduckgo.com/ip3/${domain}.ico`;
                 } catch (e) {
-                    return 'data:image/svg+xml,<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\" fill=\\"currentColor\\"><path d=\\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z\\"/></svg>';
+                    return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
                 }
             };
             
@@ -611,13 +657,13 @@
                     // Sıralama menüsünü kapat
                     const menu = document.getElementById('sort-menu');
                     const menuButton = document.getElementById('sort-menu-button');
-                    if (menu && !menu.contains(event.target) && !menuButton.contains(event.target)) {
+                    if (menu && menuButton && !menu.contains(event.target) && !menuButton.contains(event.target)) {
                         showMenu.value = false;
                     }
                     // Filtre menüsünü kapat
                     const filterMenu = document.getElementById('filter-menu');
                     const filterButton = document.getElementById('filter-menu-button');
-                    if (filterMenu && !filterMenu.contains(event.target) && !filterButton.contains(event.target)) {
+                    if (filterMenu && filterButton && !filterMenu.contains(event.target) && !filterButton.contains(event.target)) {
                         showFilterMenu.value = false;
                     }
                 });
@@ -628,7 +674,7 @@
                 isAuthenticated, isDarkMode, bookmarks, filteredBookmarks,
                 searchQuery, selectedTags, viewMode, sortBy, isLoading, isLoadingBookmarks,
                 showAddModal, showStatsModal, showDeleteConfirm, bookmarkToDelete,
-                showMenu, showFilterMenu,
+                showMenu, showFilterMenu, showSettingsModal, settings, settingsForm,
                 loginForm, bookmarkForm,
                 
                 // Computed
@@ -638,7 +684,8 @@
                 toggleTheme, setViewMode, setSortBy, login, logout,
                 loadBookmarks, addBookmark, confirmDelete, deleteBookmark,
                 toggleTag, clearAllFilters, getBookmarkFavicon, formatDate,
-                exportBookmarks, openAddModal, closeAddModal, openStatsModal, closeStatsModal
+                exportBookmarks, openAddModal, closeAddModal, openStatsModal, closeStatsModal,
+                openSettingsModal, closeSettingsModal, saveSettings, getProxiedUrl
             };
         },
         template: `
@@ -726,6 +773,14 @@
                 >
                     <i class="fas" :class="isDarkMode ? 'fa-moon' : 'fa-sun'"></i>
                 </div>
+            </button>
+
+            <button
+                @click="openSettingsModal"
+                class="tooltip bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full p-3 shadow-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-950"
+                data-tooltip="Ayarlar"
+            >
+                <i class="fas fa-cog w-5 h-5"></i>
             </button>
 
             <button
@@ -863,21 +918,41 @@
                     class="bookmark-card glass-effect rounded-2xl p-6 shadow-xl relative overflow-hidden transition-all duration-300"
                     :class="viewMode === 'grid' ? 'masonry-item' : 'flex items-start space-x-4'"
                 >
-                    <div class="absolute top-4 right-4 flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <a :href="bookmark.url" target="_blank" class="text-white p-2 rounded-full bg-primary-600 hover:bg-primary-700 transition-colors tooltip" data-tooltip="Siteyi Ziyaret Et"><i class="fas fa-external-link-alt"></i></a>
-                        <button @click="confirmDelete(bookmark)" class="text-white p-2 rounded-full bg-red-600 hover:bg-red-700 transition-colors tooltip" data-tooltip="Sil"><i class="fas fa-trash-alt"></i></button>
+                    <div class="card-actions absolute top-4 right-4 flex items-center space-x-2">
+                        <a :href="getProxiedUrl(bookmark.url)" target="_blank" class="text-white p-2 rounded-full bg-primary-600 hover:bg-primary-700 transition-colors tooltip" data-tooltip="Siteyi Ziyaret Et">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                        <button @click="confirmDelete(bookmark)" class="text-white p-2 rounded-full bg-red-600 hover:bg-red-700 transition-colors tooltip" data-tooltip="Sil">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </div>
 
                     <div :class="viewMode === 'grid' ? '' : 'flex-1 space-y-2'">
-                        <div class="flex items-center space-x-3 mb-2">
-                            <img :src="getBookmarkFavicon(bookmark.url)" alt="Favicon" class="w-6 h-6 rounded-full shadow-md">
-                            <a :href="bookmark.url" target="_blank" class="text-lg font-semibold text-gray-900 dark:text-gray-50 hover:underline transition-colors line-clamp-1">{{ bookmark.title || 'Başlık Yok' }}</a>
+                        <div class="flex items-center space-x-3 mb-3">
+                            <img :src="getBookmarkFavicon(bookmark.url)" alt="Favicon" class="w-6 h-6 rounded-full shadow-md" onerror="this.style.display='none'">
+                            <h3 class="font-semibold text-lg text-gray-900 dark:text-gray-100 line-clamp-2">
+                                {{ bookmark.title || bookmark.url }}
+                            </h3>
                         </div>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">{{ bookmark.description || 'Açıklama yok' }}</p>
-                        <div class="flex flex-wrap gap-2 text-xs">
-                            <span v-for="tag in bookmark.tags?.split(',').map(t => t.trim()).filter(t => t)" :key="tag" class="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full font-medium">{{ tag }}</span>
+                        
+                        <p v-if="settings.showDescriptions && bookmark.description" class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+                            {{ bookmark.description }}
+                        </p>
+                        
+                        <div v-if="bookmark.tags" class="flex flex-wrap gap-2 mb-4">
+                            <span 
+                                v-for="tag in bookmark.tags.split(',').map(t => t.trim()).filter(t => t)" 
+                                :key="tag" 
+                                class="px-2 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full text-xs font-medium"
+                            >
+                                {{ tag }}
+                            </span>
                         </div>
-                        <p class="mt-4 text-xs text-gray-400 dark:text-gray-600">{{ formatDate(bookmark.created_at) }}</p>
+                        
+                        <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                            <span>{{ formatDate(bookmark.created_at) }}</span>
+                            <span class="truncate max-w-xs">{{ new URL(bookmark.url).hostname }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -891,6 +966,7 @@
     </main>
 </div>
 
+<!-- Add Modal -->
 <div v-if="showAddModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950 bg-opacity-70 dark:bg-opacity-90 transition-opacity animate-fade-in">
     <div class="glass-effect rounded-3xl p-8 max-w-lg w-full text-gray-800 dark:text-gray-200 shadow-xl border border-gray-200 dark:border-gray-800 animate-slide-up relative">
         <h2 class="text-2xl font-bold mb-4">Yeni Bookmark Ekle</h2>
@@ -954,6 +1030,94 @@
     </div>
 </div>
 
+<!-- Settings Modal -->
+<div v-if="showSettingsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950 bg-opacity-70 dark:bg-opacity-90 transition-opacity animate-fade-in">
+    <div class="glass-effect rounded-3xl p-8 max-w-2xl w-full text-gray-800 dark:text-gray-200 shadow-xl border border-gray-200 dark:border-gray-800 animate-slide-up relative">
+        <h2 class="text-2xl font-bold mb-4 text-gradient">Ayarlar</h2>
+        
+        <button @click="closeSettingsModal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+            <i class="fas fa-times-circle text-2xl"></i>
+        </button>
+
+        <div class="space-y-6">
+            <!-- Proxy Settings -->
+            <div class="p-6 rounded-xl bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-shield-alt mr-2 text-orange-600"></i>
+                    Cloudflare Proxy Ayarları
+                </h3>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <input 
+                            type="checkbox" 
+                            id="proxyEnabled"
+                            v-model="settingsForm.proxyEnabled"
+                            class="h-5 w-5 text-orange-600 rounded"
+                        >
+                        <label for="proxyEnabled" class="font-medium">Proxy'yi Aktif Et</label>
+                    </div>
+                    
+                    <div v-if="settingsForm.proxyEnabled">
+                        <label class="block text-sm font-medium mb-2">Proxy URL</label>
+                        <input
+                            v-model="settingsForm.proxyUrl"
+                            type="url"
+                            placeholder="https://safari.mehmetarikan.online/https://"
+                            class="w-full px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-850 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors"
+                        >
+                        <p class="text-xs text-gray-500 mt-2">
+                            Örnek: https://safari.mehmetarikan.online/https://
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Proxy Status -->
+                <div v-if="settings.proxyEnabled" class="mt-4 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                        <span class="text-sm font-medium">Proxy Aktif: {{ settings.proxyUrl }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Display Settings -->
+            <div class="p-6 rounded-xl bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-eye mr-2 text-blue-600"></i>
+                    Görünüm Ayarları
+                </h3>
+                
+                <div class="flex items-center space-x-3">
+                    <input 
+                        type="checkbox" 
+                        id="showDescriptions"
+                        v-model="settingsForm.showDescriptions"
+                        class="h-5 w-5 text-blue-600 rounded"
+                    >
+                    <label for="showDescriptions" class="font-medium">Bookmark açıklamalarını göster</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end space-x-4 mt-8">
+            <button
+                @click="closeSettingsModal"
+                class="px-6 py-3 rounded-xl font-semibold bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            >
+                İptal
+            </button>
+            <button
+                @click="saveSettings"
+                class="px-6 py-3 rounded-xl font-semibold bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+            >
+                Kaydet
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Modal -->
 <div v-if="showStatsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950 bg-opacity-70 dark:bg-opacity-90 transition-opacity animate-fade-in">
     <div class="glass-effect rounded-3xl p-8 max-w-lg w-full text-gray-800 dark:text-gray-200 shadow-xl border border-gray-200 dark:border-gray-800 animate-slide-up relative">
         <h2 class="text-2xl font-bold mb-4 text-gradient">İstatistikler</h2>
@@ -994,6 +1158,7 @@
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
 <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950 bg-opacity-70 dark:bg-opacity-90 transition-opacity animate-fade-in">
     <div class="glass-effect rounded-3xl p-8 max-w-lg w-full text-center text-gray-800 dark:text-gray-200 shadow-xl border border-gray-200 dark:border-gray-800 animate-scale-in">
         <div class="flex flex-col items-center justify-center space-y-4">
