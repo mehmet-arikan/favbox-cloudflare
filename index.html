@@ -237,7 +237,7 @@
             const showSettingsModal = ref(false);
             const settings = ref({
                 proxyEnabled: localStorage.getItem('favbox-proxy-enabled') === 'true',
-                proxyUrl: localStorage.getItem('favbox-proxy-url') || '',
+                proxyUrl: (localStorage.getItem('favbox-proxy-url') || '').replace(/^"|"$/g, '').trim(),
                 showDescriptions: localStorage.getItem('favbox-show-descriptions') !== 'false'
             });
             const settingsForm = ref({ ...settings.value });
@@ -413,12 +413,21 @@
             const closeSettingsModal = () => showSettingsModal.value = false;
 
             const saveSettings = () => {
-                // Değerleri direkt string olarak kaydet, JSON.stringify kullanma
+                // Önce localStorage'ı temizle - eski JSON formatındaki tırnakları kaldır
+                const cleanProxyUrl = settingsForm.value.proxyUrl.replace(/^"|"$/g, '').trim();
+                
+                // Değerleri direkt string olarak kaydet
                 localStorage.setItem('favbox-proxy-enabled', settingsForm.value.proxyEnabled.toString());
-                localStorage.setItem('favbox-proxy-url', settingsForm.value.proxyUrl);
+                localStorage.setItem('favbox-proxy-url', cleanProxyUrl);
                 localStorage.setItem('favbox-show-descriptions', settingsForm.value.showDescriptions.toString());
                 
-                settings.value = { ...settingsForm.value };
+                // Settings'i de güncelle
+                settings.value = {
+                    proxyEnabled: settingsForm.value.proxyEnabled,
+                    proxyUrl: cleanProxyUrl,
+                    showDescriptions: settingsForm.value.showDescriptions
+                };
+                
                 showSettingsModal.value = false;
                 
                 console.log('Settings saved:', settings.value); // Debug için
