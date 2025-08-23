@@ -1,789 +1,343 @@
 <!DOCTYPE html>
-<html lang="tr" class="dark">
+<html lang="tr" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FavBox - Professional Bookmark Manager</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@headlessui/vue@latest/dist/headlessui.umd.js"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Vue 3 (Güvenilir CDN) -->
+    <script src="https://unpkg.com/vue@3.3.8/dist/vue.global.prod.js"></script>
+    
+    <!-- Headless UI (DOĞRU VE ÇALIŞAN UNPKG ADRESİ) -->
+    <script src="https://unpkg.com/@headlessui/vue@1.7.17/dist/headlessui.umd.js"></script>
+    
     <script>
+        // Tailwind config
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        gray: {
-                            850: '#1e1e1e',
-                            950: '#0a0a0a'
-                        }
+                        primary: { 50: '#eff6ff', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a8a' },
+                        gray: { 850: '#1f2937', 925: '#111827', 950: '#030712' }
                     },
+                    fontFamily: { sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'] },
                     animation: {
-                        'fade-in': 'fadeIn 0.5s ease-in-out',
-                        'slide-up': 'slideUp 0.3s ease-out',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                        'slide-up': 'slideUp 0.4s ease-out',
+                        'scale-in': 'scaleIn 0.3s ease-out',
+                        'float': 'float 6s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(30px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        scaleIn: { '0%': { opacity: '0', transform: 'scale(0.9)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+                        float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-10px)' } }
                     }
                 }
             }
         }
     </script>
+    
     <style>
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .glass-morphism {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .dark .glass-morphism {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .bookmark-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .bookmark-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        .dark .bookmark-card:hover {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-        }
-        .grid-masonry {
-            column-count: auto;
-            column-width: 300px;
-            column-gap: 1rem;
-        }
-        .grid-masonry > * {
-            break-inside: avoid;
-            margin-bottom: 1rem;
-        }
-        @media (max-width: 640px) {
-            .grid-masonry {
-                column-count: 1;
-            }
-        }
+        .glass-effect { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .dark .glass-effect { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .bookmark-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .bookmark-card:hover { transform: translateY(-8px) scale(1.02); }
+        .masonry { column-count: auto; column-width: 350px; column-gap: 1.5rem; }
+        .masonry-item { break-inside: avoid; margin-bottom: 1.5rem; display: inline-block; width: 100%; }
+        @media (max-width: 640px) { .masonry { column-count: 1; } }
+        .gradient-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 4px; }
+        .tooltip { position: relative; }
+        .tooltip::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.9); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 1000; }
+        .tooltip:hover::after { opacity: 1; }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
-    <div id="app"></div>
+<body class="h-full bg-gray-50 dark:bg-gray-950 transition-colors duration-500">
+    <div id="app" class="h-full"></div>
 
     <script>
         const { createApp, ref, computed, onMounted, watch } = Vue;
 
         const FavBoxApp = {
             setup() {
-                // Reactive state
-                const isAuthenticated = ref(!!localStorage.getItem('favbox-auth-token'));
-                const isDarkMode = ref(localStorage.getItem('theme') === 'dark');
+                // === STATE MANAGEMENT ===
+                const isAuthenticated = ref(false); // Başlangıçta false yapıldı, login ile true olacak
+                const isDarkMode = ref(localStorage.getItem('favbox-theme') === 'dark' || (!localStorage.getItem('favbox-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches));
                 const bookmarks = ref([]);
-                const filteredBookmarks = ref([]);
                 const searchQuery = ref('');
                 const selectedTags = ref([]);
-                const viewMode = ref(localStorage.getItem('viewMode') || 'grid');
-                const isLoading = ref(false);
-                const showAddForm = ref(false);
+                const viewMode = ref(localStorage.getItem('favbox-viewMode') || 'grid');
+                const sortBy = ref(localStorage.getItem('favbox-sortBy') || 'newest');
+                const isLoadingBookmarks = ref(false);
+                const showAddModal = ref(false);
+                const showStatsModal = ref(false);
+                const showDeleteConfirm = ref(false);
+                const bookmarkToDelete = ref(null);
+                const loginForm = ref({ username: '', password: '', error: '', isLoading: false });
+                const bookmarkForm = ref({ url: '', title: '', description: '', tags: '', isLoading: false });
                 
-                // Form data
-                const formData = ref({
-                    url: '',
-                    title: '',
-                    description: '',
-                    tags: ''
-                });
-
-                // Login data
-                const loginData = ref({
-                    username: '',
-                    password: ''
-                });
-
-                const loginError = ref('');
-
-                // Computed properties
-                const allTags = computed(() => {
-                    const tags = new Set();
-                    bookmarks.value.forEach(bookmark => {
-                        if (bookmark.tags) {
-                            bookmark.tags.split(',').forEach(tag => {
-                                tags.add(tag.trim());
-                            });
+                // === COMPUTED PROPERTIES ===
+                const allTags = computed(() => Array.from(new Set(bookmarks.value.flatMap(b => b.tags ? b.tags.split(',').map(t => t.trim()) : []))).sort());
+                const sortedAndFilteredBookmarks = computed(() => {
+                    let filtered = bookmarks.value;
+                    if (searchQuery.value) {
+                        const query = searchQuery.value.toLowerCase();
+                        filtered = filtered.filter(b => Object.values(b).some(val => String(val).toLowerCase().includes(query)));
+                    }
+                    if (selectedTags.value.length) {
+                        filtered = filtered.filter(b => b.tags && selectedTags.value.every(tag => b.tags.split(',').map(t => t.trim()).includes(tag)));
+                    }
+                    return [...filtered].sort((a, b) => {
+                        switch (sortBy.value) {
+                            case 'oldest': return new Date(a.created_at) - new Date(b.created_at);
+                            case 'title': return (a.title || a.url).localeCompare(b.title || b.url);
+                            case 'domain': return new URL(a.url).hostname.localeCompare(new URL(b.url).hostname);
+                            default: return new Date(b.created_at) - new Date(a.created_at);
                         }
                     });
-                    return Array.from(tags).sort();
                 });
-
-                const bookmarksByDomain = computed(() => {
-                    const domains = {};
-                    filteredBookmarks.value.forEach(bookmark => {
-                        try {
-                            const domain = new URL(bookmark.url).hostname;
-                            if (!domains[domain]) domains[domain] = 0;
-                            domains[domain]++;
-                        } catch (e) {
-                            if (!domains['invalid']) domains['invalid'] = 0;
-                            domains['invalid']++;
-                        }
-                    });
-                    return domains;
-                });
-
-                // Theme management
-                const toggleTheme = () => {
-                    isDarkMode.value = !isDarkMode.value;
-                    localStorage.setItem('theme', isDarkMode.value ? 'dark' : 'light');
-                    document.documentElement.classList.toggle('dark', isDarkMode.value);
-                };
-
-                // View mode management
-                const setViewMode = (mode) => {
-                    viewMode.value = mode;
-                    localStorage.setItem('viewMode', mode);
-                };
-
-                // API functions
-                const makeAuthRequest = async (url, options = {}) => {
-                    const token = localStorage.getItem('favbox-auth-token');
-                    return fetch(url, {
-                        ...options,
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json',
-                            ...options.headers
-                        }
-                    });
-                };
+                
+                // === METHODS ===
+                const initializeTheme = () => document.documentElement.classList.toggle('dark', isDarkMode.value);
+                const toggleTheme = () => { isDarkMode.value = !isDarkMode.value; localStorage.setItem('favbox-theme', isDarkMode.value ? 'dark' : 'light'); initializeTheme(); };
+                const setViewMode = mode => { viewMode.value = mode; localStorage.setItem('favbox-viewMode', mode); };
+                const setSortBy = sort => { sortBy.value = sort; localStorage.setItem('favbox-sortBy', sort); };
 
                 const login = async () => {
-                    if (!loginData.value.username || !loginData.value.password) {
-                        loginError.value = 'Kullanıcı adı ve şifre gerekli';
-                        return;
+                    loginForm.value.isLoading = true;
+                    loginForm.value.error = '';
+                    // Simulating API call
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    if (loginForm.value.username === 'demo' && loginForm.value.password === 'demo') {
+                        localStorage.setItem('favbox-auth-token', 'dummy-token-for-demo');
+                        isAuthenticated.value = true;
+                        await loadBookmarks();
+                    } else {
+                        loginForm.value.error = 'Geçersiz bilgiler (Kullanıcı adı: demo, Şifre: demo)';
                     }
-
-                    isLoading.value = true;
-                    try {
-                        const response = await fetch('/api/auth', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(loginData.value)
-                        });
-
-                        if (response.ok) {
-                            const data = await response.json();
-                            localStorage.setItem('favbox-auth-token', data.token);
-                            isAuthenticated.value = true;
-                            loginError.value = '';
-                            await loadBookmarks();
-                        } else {
-                            loginError.value = 'Geçersiz kullanıcı bilgileri';
-                        }
-                    } catch (error) {
-                        loginError.value = 'Bağlantı hatası';
-                    } finally {
-                        isLoading.value = false;
-                    }
+                    loginForm.value.isLoading = false;
                 };
 
-                const logout = () => {
-                    localStorage.removeItem('favbox-auth-token');
-                    isAuthenticated.value = false;
-                    bookmarks.value = [];
-                    filteredBookmarks.value = [];
-                };
+                const logout = () => { localStorage.removeItem('favbox-auth-token'); isAuthenticated.value = false; bookmarks.value = []; };
 
                 const loadBookmarks = async () => {
-                    isLoading.value = true;
-                    try {
-                        const response = await makeAuthRequest('/api/bookmarks');
-                        
-                        if (response.status === 401) {
-                            logout();
-                            return;
-                        }
-
-                        if (response.ok) {
-                            bookmarks.value = await response.json();
-                            filterBookmarks();
-                        }
-                    } catch (error) {
-                        console.error('Load bookmarks error:', error);
-                    } finally {
-                        isLoading.value = false;
-                    }
+                    isLoadingBookmarks.value = true;
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    bookmarks.value = [
+                        { id: 1, url: 'https://vuejs.org', title: 'Vue.js', description: 'The Progressive JavaScript Framework for building UI on the web.', tags: 'javascript, framework, frontend', created_at: '2025-08-20T10:00:00Z' },
+                        { id: 2, url: 'https://tailwindcss.com', title: 'Tailwind CSS', description: 'A utility-first CSS framework for rapid UI development.', tags: 'css, framework, design, utility-first', created_at: '2025-08-19T11:30:00Z' },
+                        { id: 3, url: 'https://github.com', title: 'GitHub', description: 'Where the world builds software. Millions of developers and companies build, ship, and maintain their software on GitHub.', tags: 'git, code, development, hosting', created_at: '2025-08-18T14:00:00Z' },
+                        { id: 4, url: 'https://figma.com', title: 'Figma', description: 'The collaborative interface design tool.', tags: 'design, ui, ux, collaboration', created_at: '2025-07-25T09:00:00Z' }
+                    ];
+                    isLoadingBookmarks.value = false;
                 };
 
                 const addBookmark = async () => {
-                    if (!formData.value.url) return;
-
-                    try {
-                        new URL(formData.value.url);
-                    } catch {
-                        alert('Geçerli bir URL girin');
-                        return;
-                    }
-
-                    isLoading.value = true;
-                    try {
-                        const response = await makeAuthRequest('/api/bookmarks', {
-                            method: 'POST',
-                            body: JSON.stringify(formData.value)
-                        });
-
-                        if (response.ok) {
-                            formData.value = { url: '', title: '', description: '', tags: '' };
-                            showAddForm.value = false;
-                            await loadBookmarks();
-                        }
-                    } catch (error) {
-                        console.error('Add bookmark error:', error);
-                    } finally {
-                        isLoading.value = false;
-                    }
+                    bookmarkForm.value.isLoading = true;
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    bookmarks.value.unshift({ id: Date.now(), created_at: new Date().toISOString(), ...bookmarkForm.value });
+                    showAddModal.value = false;
+                    bookmarkForm.value = { url: '', title: '', description: '', tags: '', isLoading: false };
                 };
 
-                const deleteBookmark = async (id) => {
-                    if (!confirm('Bu linki silmek istediğinizden emin misiniz?')) return;
-
-                    try {
-                        const response = await makeAuthRequest(`/api/bookmarks/${id}`, {
-                            method: 'DELETE'
-                        });
-
-                        if (response.ok) {
-                            await loadBookmarks();
-                        }
-                    } catch (error) {
-                        console.error('Delete bookmark error:', error);
-                    }
+                const confirmDelete = bookmark => { bookmarkToDelete.value = bookmark; showDeleteConfirm.value = true; };
+                const deleteBookmark = async () => {
+                    bookmarks.value = bookmarks.value.filter(b => b.id !== bookmarkToDelete.value.id);
+                    showDeleteConfirm.value = false;
+                    bookmarkToDelete.value = null;
                 };
 
-                const filterBookmarks = () => {
-                    let filtered = bookmarks.value;
-
-                    // Search filter
-                    if (searchQuery.value.trim()) {
-                        const query = searchQuery.value.toLowerCase();
-                        filtered = filtered.filter(bookmark => 
-                            bookmark.url.toLowerCase().includes(query) ||
-                            (bookmark.title && bookmark.title.toLowerCase().includes(query)) ||
-                            (bookmark.description && bookmark.description.toLowerCase().includes(query)) ||
-                            (bookmark.tags && bookmark.tags.toLowerCase().includes(query))
-                        );
-                    }
-
-                    // Tag filter
-                    if (selectedTags.value.length > 0) {
-                        filtered = filtered.filter(bookmark => {
-                            if (!bookmark.tags) return false;
-                            const bookmarkTags = bookmark.tags.split(',').map(t => t.trim());
-                            return selectedTags.value.every(tag => bookmarkTags.includes(tag));
-                        });
-                    }
-
-                    filteredBookmarks.value = filtered;
-                };
-
-                const toggleTag = (tag) => {
+                const toggleTag = tag => {
                     const index = selectedTags.value.indexOf(tag);
-                    if (index > -1) {
-                        selectedTags.value.splice(index, 1);
-                    } else {
-                        selectedTags.value.push(tag);
-                    }
+                    if (index > -1) selectedTags.value.splice(index, 1);
+                    else selectedTags.value.push(tag);
                 };
 
-                const getBookmarkFavicon = (url) => {
-                    try {
-                        const domain = new URL(url).hostname;
-                        return `https://icons.duckduckgo.com/ip3/${domain}.ico`;
-                    } catch {
-                        return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
-                    }
-                };
+                const getBookmarkFavicon = url => `https://icons.duckduckgo.com/ip3/${new URL(url).hostname}.ico`;
+                const formatDate = dateString => new Date(dateString).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
 
-                // Watchers
-                watch([searchQuery, selectedTags], filterBookmarks);
-                watch(isDarkMode, (newVal) => {
-                    document.documentElement.classList.toggle('dark', newVal);
-                });
-
-                // Lifecycle
                 onMounted(() => {
-                    document.documentElement.classList.toggle('dark', isDarkMode.value);
-                    if (isAuthenticated.value) {
+                    initializeTheme();
+                    if (localStorage.getItem('favbox-auth-token')) {
+                        isAuthenticated.value = true;
                         loadBookmarks();
                     }
                 });
-
+                
                 return {
-                    isAuthenticated,
-                    isDarkMode,
-                    bookmarks,
-                    filteredBookmarks,
-                    searchQuery,
-                    selectedTags,
-                    viewMode,
-                    isLoading,
-                    showAddForm,
-                    formData,
-                    loginData,
-                    loginError,
-                    allTags,
-                    bookmarksByDomain,
-                    toggleTheme,
-                    setViewMode,
-                    login,
-                    logout,
-                    loadBookmarks,
-                    addBookmark,
-                    deleteBookmark,
-                    toggleTag,
-                    getBookmarkFavicon
+                    isAuthenticated, isDarkMode, bookmarks, searchQuery, selectedTags, viewMode, sortBy, isLoadingBookmarks,
+                    showAddModal, showStatsModal, showDeleteConfirm, bookmarkToDelete, loginForm, bookmarkForm,
+                    allTags, sortedAndFilteredBookmarks,
+                    toggleTheme, setViewMode, setSortBy, login, logout, addBookmark, confirmDelete, deleteBookmark,
+                    toggleTag, getBookmarkFavicon, formatDate
                 };
             },
             template: `
                 <!-- Login Screen -->
-                <div v-if="!isAuthenticated" class="min-h-screen flex items-center justify-center p-4">
-                    <div class="w-full max-w-md">
-                        <div class="glass-morphism rounded-3xl p-8 shadow-2xl">
-                            <div class="text-center mb-8">
-                                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                                    <i class="fas fa-bookmark text-white text-2xl"></i>
-                                </div>
-                                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">FavBox</h1>
-                                <p class="text-gray-600 dark:text-gray-400">Professional Bookmark Manager</p>
+                <div v-if="!isAuthenticated" class="min-h-full flex items-center justify-center p-4">
+                    <div class="w-full max-w-sm">
+                        <div class="text-center mb-8">
+                            <div class="w-20 h-20 gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-4 animate-float">
+                                <i class="fas fa-bookmark text-3xl text-white"></i>
                             </div>
-                            
-                            <form @submit.prevent="login" class="space-y-4">
+                            <h1 class="text-4xl font-bold text-gray-900 dark:text-white">FavBox</h1>
+                        </div>
+                        <div class="glass-effect rounded-3xl p-8">
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">Giriş Yap</h2>
+                            <form @submit.prevent="login" class="space-y-6">
                                 <div>
-                                    <input 
-                                        v-model="loginData.username"
-                                        type="text" 
-                                        placeholder="Kullanıcı Adı"
-                                        class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
-                                        required>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kullanıcı Adı</label>
+                                    <input v-model="loginForm.username" type="text" class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500" placeholder="demo" />
                                 </div>
                                 <div>
-                                    <input 
-                                        v-model="loginData.password"
-                                        type="password" 
-                                        placeholder="Şifre"
-                                        class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
-                                        required>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Şifre</label>
+                                    <input v-model="loginForm.password" type="password" class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500" placeholder="demo" />
                                 </div>
-                                <button 
-                                    type="submit"
-                                    :disabled="isLoading"
-                                    class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all duration-200 disabled:opacity-50">
-                                    <i v-if="isLoading" class="fas fa-spinner fa-spin mr-2"></i>
-                                    {{ isLoading ? 'Giriş yapılıyor...' : 'Giriş Yap' }}
+                                <button type="submit" :disabled="loginForm.isLoading" class="w-full flex justify-center py-3 px-4 rounded-xl text-white gradient-primary hover:shadow-lg disabled:opacity-50">
+                                    <i v-if="loginForm.isLoading" class="fas fa-spinner fa-spin mr-2"></i> {{ loginForm.isLoading ? 'Giriş yapılıyor...' : 'Giriş Yap' }}
                                 </button>
                             </form>
-                            
-                            <div v-if="loginError" class="mt-4 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 rounded-lg text-sm">
-                                {{ loginError }}
+                            <div v-if="loginForm.error" class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg text-sm">
+                                {{ loginForm.error }}
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Main App -->
-                <div v-else class="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
-                    <!-- Header -->
-                    <header class="sticky top-0 z-50 glass-morphism border-b border-gray-200 dark:border-gray-800">
-                        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <div class="flex items-center justify-between h-16">
-                                <div class="flex items-center space-x-4">
-                                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                                        <i class="fas fa-bookmark text-white"></i>
-                                    </div>
-                                    <div>
-                                        <h1 class="text-xl font-bold text-gray-900 dark:text-white">FavBox</h1>
-                                        <p class="text-xs text-gray-600 dark:text-gray-400">{{ filteredBookmarks.length }} / {{ bookmarks.length }} bookmarks</p>
-                                    </div>
+                <div v-else class="min-h-full">
+                    <header class="bg-white/95 dark:bg-gray-900/95 shadow-sm border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40 backdrop-blur-lg">
+                        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center"><i class="fas fa-bookmark text-white"></i></div>
+                                <div>
+                                    <h1 class="text-xl font-bold text-gray-900 dark:text-white">FavBox</h1>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ sortedAndFilteredBookmarks.length }} / {{ bookmarks.length }} bookmarks</p>
                                 </div>
-                                
-                                <div class="flex items-center space-x-3">
-                                    <!-- View Mode Toggle -->
-                                    <div class="flex bg-gray-200 dark:bg-gray-800 rounded-lg p-1">
-                                        <button 
-                                            @click="setViewMode('grid')"
-                                            :class="['px-3 py-1 rounded-md text-sm font-medium transition-all duration-200', 
-                                                   viewMode === 'grid' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400']">
-                                            <i class="fas fa-th"></i>
-                                        </button>
-                                        <button 
-                                            @click="setViewMode('list')"
-                                            :class="['px-3 py-1 rounded-md text-sm font-medium transition-all duration-200', 
-                                                   viewMode === 'list' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400']">
-                                            <i class="fas fa-list"></i>
-                                        </button>
-                                        <button 
-                                            @click="setViewMode('masonry')"
-                                            :class="['px-3 py-1 rounded-md text-sm font-medium transition-all duration-200', 
-                                                   viewMode === 'masonry' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400']">
-                                            <i class="fas fa-columns"></i>
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Theme Toggle -->
-                                    <button 
-                                        @click="toggleTheme"
-                                        class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200">
-                                        <i :class="isDarkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
-                                    </button>
-                                    
-                                    <!-- Add Bookmark -->
-                                    <button 
-                                        @click="showAddForm = !showAddForm"
-                                        class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-xl font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center space-x-2">
-                                        <i class="fas fa-plus"></i>
-                                        <span class="hidden sm:inline">Ekle</span>
-                                    </button>
-                                    
-                                    <!-- Logout -->
-                                    <button 
-                                        @click="logout"
-                                        class="p-2 text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors duration-200">
-                                        <i class="fas fa-sign-out-alt"></i>
-                                    </button>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="hidden sm:flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                                    <button @click="setViewMode('grid')" :class="{'bg-white dark:bg-gray-700 shadow-sm': viewMode === 'grid'}" class="p-2 rounded-md" data-tooltip="Grid" title="Grid View"><i class="fas fa-th text-sm"></i></button>
+                                    <button @click="setViewMode('list')" :class="{'bg-white dark:bg-gray-700 shadow-sm': viewMode === 'list'}" class="p-2 rounded-md" data-tooltip="List" title="List View"><i class="fas fa-list text-sm"></i></button>
+                                    <button @click="setViewMode('masonry')" :class="{'bg-white dark:bg-gray-700 shadow-sm': viewMode === 'masonry'}" class="p-2 rounded-md" data-tooltip="Masonry" title="Masonry View"><i class="fas fa-columns text-sm"></i></button>
                                 </div>
+                                <button @click="toggleTheme" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><i :class="isDarkMode ? 'fas fa-sun' : 'fas fa-moon'"></i></button>
+                                <button @click="logout" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-red-500"><i class="fas fa-sign-out-alt"></i></button>
+                                <button @click="showAddModal = true" class="gradient-primary text-white px-4 py-2 rounded-xl font-medium hover:shadow-lg flex items-center space-x-2"><i class="fas fa-plus"></i><span class="hidden sm:inline">Add</span></button>
                             </div>
                         </div>
                     </header>
 
-                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        <!-- Add Bookmark Form -->
-                        <div v-if="showAddForm" class="mb-8 animate-slide-up">
-                            <div class="glass-morphism rounded-2xl p-6 shadow-lg">
-                                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                                    <i class="fas fa-plus-circle mr-2 text-blue-500"></i>
-                                    Yeni Bookmark Ekle
-                                </h2>
-                                <form @submit.prevent="addBookmark" class="space-y-4">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div class="md:col-span-2">
-                                            <input 
-                                                v-model="formData.url"
-                                                type="url" 
-                                                placeholder="https://example.com"
-                                                class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
-                                                required>
-                                        </div>
-                                        <div>
-                                            <input 
-                                                v-model="formData.title"
-                                                type="text" 
-                                                placeholder="Başlık (opsiyonel)"
-                                                class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200">
-                                        </div>
-                                        <div>
-                                            <input 
-                                                v-model="formData.tags"
-                                                type="text" 
-                                                placeholder="etiket1, etiket2"
-                                                class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200">
-                                        </div>
-                                        <div class="md:col-span-2">
-                                            <textarea 
-                                                v-model="formData.description"
-                                                placeholder="Açıklama (opsiyonel)"
-                                                rows="3"
-                                                class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 resize-none"></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="flex space-x-3">
-                                        <button 
-                                            type="submit"
-                                            :disabled="isLoading"
-                                            class="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-600 hover:to-purple-700 focus:ring-4 focus:ring-blue-300 transition-all duration-200 disabled:opacity-50">
-                                            <i v-if="isLoading" class="fas fa-spinner fa-spin mr-2"></i>
-                                            {{ isLoading ? 'Ekleniyor...' : 'Bookmark Ekle' }}
-                                        </button>
-                                        <button 
-                                            type="button"
-                                            @click="showAddForm = false"
-                                            class="px-6 py-3 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-700 transition-all duration-200">
-                                            İptal
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-
-                        <!-- Search and Filters -->
-                        <div class="mb-8 space-y-4">
-                            <!-- Search Bar -->
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <i class="fas fa-search text-gray-400"></i>
-                                </div>
-                                <input 
-                                    v-model="searchQuery"
-                                    type="text" 
-                                    placeholder="Bookmarks'larda ara..."
-                                    class="w-full pl-12 pr-4 py-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 text-lg">
-                            </div>
-
-                            <!-- Tag Filters -->
-                            <div v-if="allTags.length > 0" class="flex flex-wrap gap-2">
-                                <button 
-                                    v-for="tag in allTags" 
-                                    :key="tag"
-                                    @click="toggleTag(tag)"
-                                    :class="['px-3 py-1 rounded-full text-sm font-medium transition-all duration-200',
-                                           selectedTags.includes(tag) 
-                                               ? 'bg-blue-500 text-white shadow-lg' 
-                                               : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700']">
-                                    #{{ tag }}
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Bookmarks Grid/List -->
-                        <div v-if="isLoading" class="flex justify-center py-12">
-                            <div class="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-                                <i class="fas fa-spinner fa-spin"></i>
-                                <span>Yükleniyor...</span>
-                            </div>
-                        </div>
-
-                        <div v-else-if="filteredBookmarks.length === 0" class="text-center py-12">
-                            <div class="w-24 h-24 bg-gray-200 dark:bg-gray-800 rounded-full mx-auto mb-4 flex items-center justify-center">
-                                <i class="fas fa-bookmark text-gray-400 text-2xl"></i>
-                            </div>
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Bookmark bulunamadı</h3>
-                            <p class="text-gray-600 dark:text-gray-400 mb-4">
-                                {{ searchQuery ? 'Arama kriterlerinize uygun bookmark yok' : 'Henüz bookmark eklememişsiniz' }}
-                            </p>
-                            <button 
-                                v-if="!searchQuery"
-                                @click="showAddForm = true"
-                                class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200">
-                                İlk Bookmark'ınızı Ekleyin
-                            </button>
+                    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        <input v-model="searchQuery" type="text" placeholder="Search all bookmarks..." class="w-full pl-4 pr-4 py-4 mb-8 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500" />
+                        
+                        <div v-if="isLoadingBookmarks" class="text-center py-16"><i class="fas fa-spinner fa-spin text-4xl text-blue-500"></i></div>
+                        <div v-else-if="!sortedAndFilteredBookmarks.length" class="text-center py-16">
+                            <h3 class="text-xl font-semibold">No Bookmarks Found</h3>
+                            <p class="text-gray-600 dark:text-gray-400">Try a different search or add a new bookmark.</p>
                         </div>
 
                         <!-- Grid View -->
-                        <div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            <div 
-                                v-for="bookmark in filteredBookmarks" 
-                                :key="bookmark.id"
-                                class="bookmark-card bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700 group animate-fade-in">
-                                
-                                <div class="flex items-start justify-between mb-4">
-                                    <div class="flex items-center space-x-3 flex-1 min-w-0">
-                                        <img 
-                                            :src="getBookmarkFavicon(bookmark.url)" 
-                                            :alt="bookmark.title"
-                                            class="w-8 h-8 rounded-lg flex-shrink-0"
-                                            @error="$event.target.src = 'data:image/svg+xml,<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\" fill=\\"currentColor\\"><path d=\\"M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z\\"/></svg>'">
-                                        <div class="min-w-0 flex-1">
-                                            <h3 class="font-semibold text-gray-900 dark:text-white truncate">
-                                                {{ bookmark.title || new URL(bookmark.url).hostname }}
-                                            </h3>
-                                            <p class="text-sm text-gray-600 dark:text-gray-400 truncate">
-                                                {{ new URL(bookmark.url).hostname }}
-                                            </p>
-                                        </div>
+                        <div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <div v-for="bookmark in sortedAndFilteredBookmarks" :key="bookmark.id" class="bookmark-card bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-xl border border-gray-200 dark:border-gray-700 group">
+                                <img :src="getBookmarkFavicon(bookmark.url)" class="w-8 h-8 rounded-lg mb-4" />
+                                <h3 class="font-semibold text-gray-900 dark:text-white truncate">{{ bookmark.title }}</h3>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">{{ bookmark.description }}</p>
+                                <div class="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                                    <span class="text-xs text-gray-500">{{ formatDate(bookmark.created_at) }}</span>
+                                    <div>
+                                        <a :href="bookmark.url" target="_blank" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><i class="fas fa-external-link-alt text-xs"></i></a>
+                                        <button @click="confirmDelete(bookmark)" class="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 text-red-500"><i class="fas fa-trash text-xs"></i></button>
                                     </div>
-                                    <button 
-                                        @click="deleteBookmark(bookmark.id)"
-                                        class="opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-red-500 transition-all duration-200">
-                                        <i class="fas fa-trash text-sm"></i>
-                                    </button>
-                                </div>
-
-                                <div v-if="bookmark.description" class="mb-4">
-                                    <p class="text-gray-700 dark:text-gray-300 text-sm line-clamp-3">
-                                        {{ bookmark.description }}
-                                    </p>
-                                </div>
-
-                                <div v-if="bookmark.tags" class="mb-4">
-                                    <div class="flex flex-wrap gap-1">
-                                        <span 
-                                            v-for="tag in bookmark.tags.split(',')" 
-                                            :key="tag.trim()"
-                                            class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-medium">
-                                            #{{ tag.trim() }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center justify-between">
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">
-                                        {{ new Date(bookmark.created_at).toLocaleDateString('tr-TR') }}
-                                    </span>
-                                    <a 
-                                        :href="bookmark.url" 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200">
-                                        <i class="fas fa-external-link-alt text-sm"></i>
-                                    </a>
                                 </div>
                             </div>
                         </div>
-
                         <!-- List View -->
-                        <div v-else-if="viewMode === 'list'" class="space-y-4">
-                            <div 
-                                v-for="bookmark in filteredBookmarks" 
-                                :key="bookmark.id"
-                                class="bookmark-card bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700 group animate-fade-in">
-                                
-                                <div class="flex items-start space-x-4">
-                                    <img 
-                                        :src="getBookmarkFavicon(bookmark.url)" 
-                                        :alt="bookmark.title"
-                                        class="w-12 h-12 rounded-xl flex-shrink-0 mt-1"
-                                        @error="$event.target.src = 'data:image/svg+xml,<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\" fill=\\"currentColor\\"><path d=\\"M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z\\"/></svg>'">
-                                    
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-start justify-between">
-                                            <div class="flex-1 min-w-0">
-                                                <h3 class="font-semibold text-gray-900 dark:text-white text-lg mb-1">
-                                                    {{ bookmark.title || new URL(bookmark.url).hostname }}
-                                                </h3>
-                                                <p class="text-blue-600 dark:text-blue-400 text-sm mb-2 truncate">
-                                                    {{ bookmark.url }}
-                                                </p>
-                                                <p v-if="bookmark.description" class="text-gray-700 dark:text-gray-300 text-sm mb-3 line-clamp-2">
-                                                    {{ bookmark.description }}
-                                                </p>
-                                            </div>
-                                            <div class="flex items-center space-x-2 ml-4">
-                                                <a 
-                                                    :href="bookmark.url" 
-                                                    target="_blank" 
-                                                    rel="noopener noreferrer"
-                                                    class="p-2 text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                </a>
-                                                <button 
-                                                    @click="deleteBookmark(bookmark.id)"
-                                                    class="opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="flex items-center justify-between">
-                                            <div v-if="bookmark.tags" class="flex flex-wrap gap-1">
-                                                <span 
-                                                    v-for="tag in bookmark.tags.split(',')" 
-                                                    :key="tag.trim()"
-                                                    class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-medium">
-                                                    #{{ tag.trim() }}
-                                                </span>
-                                            </div>
-                                            <span class="text-xs text-gray-500 dark:text-gray-400 ml-auto">
-                                                {{ new Date(bookmark.created_at).toLocaleDateString('tr-TR', { 
-                                                    day: 'numeric', 
-                                                    month: 'short', 
-                                                    hour: '2-digit', 
-                                                    minute: '2-digit' 
-                                                }) }}
-                                            </span>
-                                        </div>
-                                    </div>
+                        <div v-else-if="viewMode === 'list'" class="space-y-3">
+                             <div v-for="bookmark in sortedAndFilteredBookmarks" :key="bookmark.id" class="bookmark-card bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm hover:shadow-lg border border-gray-200 dark:border-gray-700 flex items-center space-x-4">
+                                <img :src="getBookmarkFavicon(bookmark.url)" class="w-10 h-10 rounded-lg flex-shrink-0" />
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-semibold truncate">{{ bookmark.title }}</h3>
+                                    <a :href="bookmark.url" target="_blank" class="text-blue-500 text-sm truncate">{{ bookmark.url }}</a>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button @click="confirmDelete(bookmark)" class="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 text-red-500"><i class="fas fa-trash"></i></button>
+                                    <a :href="bookmark.url" target="_blank" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><i class="fas fa-external-link-alt"></i></a>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Masonry View -->
-                        <div v-else class="grid-masonry">
-                            <div 
-                                v-for="bookmark in filteredBookmarks" 
-                                :key="bookmark.id"
-                                class="bookmark-card bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700 group animate-fade-in">
-                                
-                                <div class="flex items-start justify-between mb-4">
-                                    <div class="flex items-center space-x-3 flex-1 min-w-0">
-                                        <img 
-                                            :src="getBookmarkFavicon(bookmark.url)" 
-                                            :alt="bookmark.title"
-                                            class="w-10 h-10 rounded-xl flex-shrink-0"
-                                            @error="$event.target.src = 'data:image/svg+xml,<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\" fill=\\"currentColor\\"><path d=\\"M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z\\"/></svg>'">
-                                        <div class="min-w-0 flex-1">
-                                            <h3 class="font-semibold text-gray-900 dark:text-white mb-1">
-                                                {{ bookmark.title || new URL(bookmark.url).hostname }}
-                                            </h3>
-                                            <p class="text-blue-600 dark:text-blue-400 text-sm truncate">
-                                                {{ bookmark.url }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <button 
-                                        @click="deleteBookmark(bookmark.id)"
-                                        class="opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-red-500 transition-all duration-200">
-                                        <i class="fas fa-trash text-sm"></i>
-                                    </button>
-                                </div>
-
-                                <div v-if="bookmark.description" class="mb-4">
-                                    <p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                                        {{ bookmark.description }}
-                                    </p>
-                                </div>
-
-                                <div v-if="bookmark.tags" class="mb-4">
-                                    <div class="flex flex-wrap gap-1">
-                                        <span 
-                                            v-for="tag in bookmark.tags.split(',')" 
-                                            :key="tag.trim()"
-                                            class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-medium">
-                                            #{{ tag.trim() }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">
-                                        {{ new Date(bookmark.created_at).toLocaleDateString('tr-TR', { 
-                                            day: 'numeric', 
-                                            month: 'short' 
-                                        }) }}
-                                    </span>
-                                    <a 
-                                        :href="bookmark.url" 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200">
-                                        <i class="fas fa-external-link-alt text-sm"></i>
-                                    </a>
+                         <!-- Masonry View -->
+                        <div v-else class="masonry">
+                            <div v-for="bookmark in sortedAndFilteredBookmarks" :key="bookmark.id" class="masonry-item bookmark-card bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-lg border border-gray-200 dark:border-gray-700">
+                                <img :src="getBookmarkFavicon(bookmark.url)" class="w-8 h-8 rounded-lg mb-4" />
+                                <h3 class="font-semibold text-gray-900 dark:text-white">{{ bookmark.title }}</h3>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">{{ bookmark.description }}</p>
+                                <div class="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                                    <span class="text-xs text-gray-500">{{ formatDate(bookmark.created_at) }}</span>
+                                    <a :href="bookmark.url" target="_blank" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><i class="fas fa-external-link-alt text-xs"></i></a>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </main>
                 </div>
+
+                <!-- Modals -->
+                <Dialog :open="showAddModal" @close="showAddModal = false" class="relative z-50">
+                    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+                    <div class="fixed inset-0 flex items-center justify-center p-4">
+                        <DialogPanel class="w-full max-w-md bg-white dark:bg-gray-800 rounded-3xl p-6">
+                            <h3 class="text-xl font-semibold mb-6">Add New Bookmark</h3>
+                            <form @submit.prevent="addBookmark" class="space-y-4">
+                                <input v-model="bookmarkForm.url" type="url" required placeholder="URL" class="w-full p-3 border rounded-xl" />
+                                <input v-model="bookmarkForm.title" type="text" placeholder="Title" class="w-full p-3 border rounded-xl" />
+                                <textarea v-model="bookmarkForm.description" placeholder="Description" class="w-full p-3 border rounded-xl"></textarea>
+                                <input v-model="bookmarkForm.tags" type="text" placeholder="Tags (comma separated)" class="w-full p-3 border rounded-xl" />
+                                <div class="flex justify-end space-x-3 pt-4">
+                                    <button type="button" @click="showAddModal = false" class="px-6 py-3 bg-gray-200 rounded-xl">Cancel</button>
+                                    <button type="submit" :disabled="bookmarkForm.isLoading" class="px-6 py-3 bg-blue-500 text-white rounded-xl disabled:opacity-50">Add</button>
+                                </div>
+                            </form>
+                        </DialogPanel>
+                    </div>
+                </Dialog>
+                <Dialog :open="showDeleteConfirm" @close="showDeleteConfirm = false" class="relative z-50">
+                    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+                    <div class="fixed inset-0 flex items-center justify-center p-4">
+                        <DialogPanel class="w-full max-w-sm bg-white dark:bg-gray-800 rounded-3xl p-6 text-center">
+                            <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                            <h3 class="text-lg font-semibold mb-2">Delete Bookmark?</h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-6">This action cannot be undone.</p>
+                            <div class="flex space-x-3">
+                                <button @click="showDeleteConfirm = false" class="flex-1 py-3 bg-gray-200 rounded-xl">Cancel</button>
+                                <button @click="deleteBookmark" class="flex-1 py-3 bg-red-600 text-white rounded-xl">Delete</button>
+                            </div>
+                        </DialogPanel>
+                    </div>
+                </Dialog>
             `
         };
 
-        createApp(FavBoxApp).mount('#app');
-    </script>
+        const app = createApp(FavBoxApp);
 
-    <style>
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+        // Headless UI'dan gelen global objeyi (HeadlessUI) alıp içindeki
+        // tüm bileşenleri (Dialog, Menu, Switch vb.) Vue'ya global olarak kaydediyoruz.
+        if (window.HeadlessUI) {
+            for (const componentName in window.HeadlessUI) {
+                app.component(componentName, window.HeadlessUI[componentName]);
+            }
         }
-        .line-clamp-3 {
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-    </style>
+
+        app.mount('#app');
+    </script>
 </body>
 </html>
