@@ -5,29 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FavBox - Professional Bookmark Manager</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Vue 3 (Güvenilir CDN) -->
     <script src="https://unpkg.com/vue@3.3.8/dist/vue.global.prod.js"></script>
     
-    <!-- Headless UI (DOĞRU VE ÇALIŞAN UNPKG ADRESİ) -->
-    <script src="https://unpkg.com/@headlessui/vue@1.7.17/dist/headlessui.umd.js"></script>
-    
     <script>
-        // Tailwind config
+        // Tailwind config for professional design
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        primary: { 50: '#eff6ff', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a8a' },
-                        gray: { 850: '#1f2937', 925: '#111827', 950: '#030712' }
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a'
+                        },
+                        gray: {
+                            850: '#1f2937',
+                            925: '#111827',
+                            950: '#030712'
+                        }
                     },
-                    fontFamily: { sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'] },
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+                    },
                     animation: {
                         'fade-in': 'fadeIn 0.6s ease-out',
                         'slide-up': 'slideUp 0.4s ease-out',
@@ -35,10 +41,25 @@
                         'float': 'float 6s ease-in-out infinite'
                     },
                     keyframes: {
-                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-                        slideUp: { '0%': { opacity: '0', transform: 'translateY(30px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-                        scaleIn: { '0%': { opacity: '0', transform: 'scale(0.9)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
-                        float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-10px)' } }
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(30px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        scaleIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.9)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    },
+                    backdropBlur: {
+                        xs: '2px'
                     }
                 }
             }
@@ -46,298 +67,962 @@
     </script>
     
     <style>
-        .glass-effect { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .dark .glass-effect { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .bookmark-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .bookmark-card:hover { transform: translateY(-8px) scale(1.02); }
-        .masonry { column-count: auto; column-width: 350px; column-gap: 1.5rem; }
-        .masonry-item { break-inside: avoid; margin-bottom: 1.5rem; display: inline-block; width: 100%; }
-        @media (max-width: 640px) { .masonry { column-count: 1; } }
-        .gradient-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); }
-        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 4px; }
-        .tooltip { position: relative; }
-        .tooltip::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.9); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 1000; }
-        .tooltip:hover::after { opacity: 1; }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .dark .glass-effect {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .bookmark-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .bookmark-card:hover {
+            transform: translateY(-8px) scale(1.02);
+        }
+        
+        .masonry {
+            column-count: auto;
+            column-width: 350px;
+            column-gap: 1.5rem;
+            break-inside: avoid;
+        }
+        
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        @media (max-width: 640px) {
+            .masonry {
+                column-count: 1;
+            }
+        }
+        
+        .gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .gradient-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .gradient-accent {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .search-highlight {
+            position: relative;
+        }
+        
+        .search-highlight:focus-within::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: inherit;
+            z-index: -1;
+            opacity: 0.3;
+            blur: 4px;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 4px;
+        }
+        
+        .tooltip {
+            position: relative;
+        }
+        
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+        
+        /* Loading shimmer effect */
+        .shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        
+        .dark .shimmer {
+            background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+            background-size: 200% 100%;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        /* Selection styles */
+        ::selection {
+            background: rgba(102, 126, 234, 0.3);
+        }
+        
+        .dark ::selection {
+            background: rgba(102, 126, 234, 0.5);
+        }
     </style>
 </head>
 <body class="h-full bg-gray-50 dark:bg-gray-950 transition-colors duration-500">
     <div id="app" class="h-full"></div>
 
-    <script>
-        const { createApp, ref, computed, onMounted, watch } = Vue;
+<script>
+    const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
 
-        const FavBoxApp = {
-            setup() {
-                // === STATE MANAGEMENT ===
-                const isAuthenticated = ref(false); // Başlangıçta false yapıldı, login ile true olacak
-                const isDarkMode = ref(localStorage.getItem('favbox-theme') === 'dark' || (!localStorage.getItem('favbox-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches));
-                const bookmarks = ref([]);
-                const searchQuery = ref('');
-                const selectedTags = ref([]);
-                const viewMode = ref(localStorage.getItem('favbox-viewMode') || 'grid');
-                const sortBy = ref(localStorage.getItem('favbox-sortBy') || 'newest');
-                const isLoadingBookmarks = ref(false);
-                const showAddModal = ref(false);
-                const showStatsModal = ref(false);
-                const showDeleteConfirm = ref(false);
-                const bookmarkToDelete = ref(null);
-                const loginForm = ref({ username: '', password: '', error: '', isLoading: false });
-                const bookmarkForm = ref({ url: '', title: '', description: '', tags: '', isLoading: false });
+    const FavBoxApp = {
+        setup() {
+            // === STATE MANAGEMENT ===
+            const isAuthenticated = ref(!!localStorage.getItem('favbox-auth-token'));
+            const isDarkMode = ref(localStorage.getItem('favbox-theme') === 'dark' || 
+                (!localStorage.getItem('favbox-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches));
+            
+            const bookmarks = ref([]);
+            const filteredBookmarks = ref([]);
+            const searchQuery = ref('');
+            const selectedTags = ref([]);
+            const viewMode = ref(localStorage.getItem('favbox-viewMode') || 'grid');
+            const sortBy = ref(localStorage.getItem('favbox-sortBy') || 'newest');
+            
+            const isLoading = ref(false);
+            const isLoadingBookmarks = ref(false);
+
+            // Modal durumları
+            const showAddModal = ref(false);
+            const showStatsModal = ref(false);
+            const showDeleteConfirm = ref(false);
+            
+            // Menü ve Dropdown durumları
+            const showMenu = ref(false);
+            const showFilterMenu = ref(false);
+            const bookmarkToDelete = ref(null);
+            
+            // Form states
+            const loginForm = ref({
+                username: '',
+                password: '',
+                error: '',
+                isLoading: false
+            });
+            
+            const bookmarkForm = ref({
+                url: '',
+                title: '',
+                description: '',
+                tags: '',
+                isLoading: false
+            });
+            
+            // === COMPUTED PROPERTIES ===
+            const allTags = computed(() => {
+                const tags = new Set();
+                bookmarks.value.forEach(bookmark => {
+                    if (bookmark.tags) {
+                        bookmark.tags.split(',').forEach(tag => {
+                            const cleanTag = tag.trim();
+                            if (cleanTag) tags.add(cleanTag);
+                        });
+                    }
+                });
+                return Array.from(tags).sort();
+            });
+            
+            const bookmarkStats = computed(() => {
+                const stats = {
+                    total: bookmarks.value.length,
+                    thisMonth: 0,
+                    domains: new Set(),
+                    topTags: {},
+                    totalTags: 0
+                };
                 
-                // === COMPUTED PROPERTIES ===
-                const allTags = computed(() => Array.from(new Set(bookmarks.value.flatMap(b => b.tags ? b.tags.split(',').map(t => t.trim()) : []))).sort());
-                const sortedAndFilteredBookmarks = computed(() => {
-                    let filtered = bookmarks.value;
-                    if (searchQuery.value) {
-                        const query = searchQuery.value.toLowerCase();
-                        filtered = filtered.filter(b => Object.values(b).some(val => String(val).toLowerCase().includes(query)));
+                const thisMonth = new Date().getMonth();
+                const thisYear = new Date().getFullYear();
+                
+                bookmarks.value.forEach(bookmark => {
+                    // This month count
+                    const bookmarkDate = new Date(bookmark.created_at);
+                    if (bookmarkDate.getMonth() === thisMonth && bookmarkDate.getFullYear() === thisYear) {
+                        stats.thisMonth++;
                     }
-                    if (selectedTags.value.length) {
-                        filtered = filtered.filter(b => b.tags && selectedTags.value.every(tag => b.tags.split(',').map(t => t.trim()).includes(tag)));
+                    
+                    // Domains
+                    try {
+                        stats.domains.add(new URL(bookmark.url).hostname);
+                    } catch (e) {
+                        // Invalid URL, skip
                     }
-                    return [...filtered].sort((a, b) => {
-                        switch (sortBy.value) {
-                            case 'oldest': return new Date(a.created_at) - new Date(b.created_at);
-                            case 'title': return (a.title || a.url).localeCompare(b.title || b.url);
-                            case 'domain': return new URL(a.url).hostname.localeCompare(new URL(b.url).hostname);
-                            default: return new Date(b.created_at) - new Date(a.created_at);
-                        }
-                    });
+                    
+                    // Tags
+                    if (bookmark.tags) {
+                        bookmark.tags.split(',').forEach(tag => {
+                            const cleanTag = tag.trim();
+                            if (cleanTag) {
+                                stats.topTags[cleanTag] = (stats.topTags[cleanTag] || 0) + 1;
+                                stats.totalTags++;
+                            }
+                        });
+                    }
                 });
                 
-                // === METHODS ===
-                const initializeTheme = () => document.documentElement.classList.toggle('dark', isDarkMode.value);
-                const toggleTheme = () => { isDarkMode.value = !isDarkMode.value; localStorage.setItem('favbox-theme', isDarkMode.value ? 'dark' : 'light'); initializeTheme(); };
-                const setViewMode = mode => { viewMode.value = mode; localStorage.setItem('favbox-viewMode', mode); };
-                const setSortBy = sort => { sortBy.value = sort; localStorage.setItem('favbox-sortBy', sort); };
+                return stats;
+            });
+            
+            const sortedAndFilteredBookmarks = computed(() => {
+                let filtered = [...bookmarks.value];
+                
+                // Search filter
+                if (searchQuery.value.trim()) {
+                    const query = searchQuery.value.toLowerCase();
+                    filtered = filtered.filter(bookmark => 
+                        bookmark.url.toLowerCase().includes(query) ||
+                        (bookmark.title && bookmark.title.toLowerCase().includes(query)) ||
+                        (bookmark.description && bookmark.description.toLowerCase().includes(query)) ||
+                        (bookmark.tags && bookmark.tags.toLowerCase().includes(query))
+                    );
+                }
+                
+                // Tag filter
+                if (selectedTags.value.length > 0) {
+                    filtered = filtered.filter(bookmark => {
+                        if (!bookmark.tags) return false;
+                        const bookmarkTags = bookmark.tags.split(',').map(t => t.trim());
+                        return selectedTags.value.every(tag => bookmarkTags.includes(tag));
+                    });
+                }
+                
+                // Sort
+                switch (sortBy.value) {
+                    case 'newest':
+                        filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                        break;
+                    case 'oldest':
+                        filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                        break;
+                    case 'title':
+                        filtered.sort((a, b) => (a.title || a.url).localeCompare(b.title || b.url));
+                        break;
+                    case 'domain':
+                        filtered.sort((a, b) => {
+                            try {
+                                const domainA = new URL(a.url).hostname;
+                                const domainB = new URL(b.url).hostname;
+                                return domainA.localeCompare(domainB);
+                            } catch (e) {
+                                return 0;
+                            }
+                        });
+                        break;
+                }
+                
+                return filtered;
+            });
+            
+            // === METHODS ===
+            const initializeTheme = () => {
+                document.documentElement.classList.toggle('dark', isDarkMode.value);
+            };
+            
+            const toggleTheme = () => {
+                isDarkMode.value = !isDarkMode.value;
+                localStorage.setItem('favbox-theme', isDarkMode.value ? 'dark' : 'light');
+                initializeTheme();
+            };
+            
+            const setViewMode = (mode) => {
+                viewMode.value = mode;
+                localStorage.setItem('favbox-viewMode', mode);
+            };
+            
+            const setSortBy = (sort) => {
+                sortBy.value = sort;
+                localStorage.setItem('favbox-sortBy', sort);
+                showMenu.value = false; // Menüyü kapat
+            };
+            
+            // Modal açma/kapama fonksiyonları
+            const openAddModal = () => showAddModal.value = true;
+            const closeAddModal = () => {
+                showAddModal.value = false;
+                bookmarkForm.value = { url: '', title: '', description: '', tags: '', isLoading: false };
+            };
+            const openStatsModal = () => showStatsModal.value = true;
+            const closeStatsModal = () => showStatsModal.value = false;
 
-                const login = async () => {
-                    loginForm.value.isLoading = true;
-                    loginForm.value.error = '';
-                    // Simulating API call
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    if (loginForm.value.username === 'demo' && loginForm.value.password === 'demo') {
-                        localStorage.setItem('favbox-auth-token', 'dummy-token-for-demo');
+            const makeAuthRequest = async (url, options = {}) => {
+                const token = localStorage.getItem('favbox-auth-token');
+                return fetch(url, {
+                    ...options,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+            };
+            
+            const login = async () => {
+                if (!loginForm.value.username || !loginForm.value.password) {
+                    loginForm.value.error = 'Kullanıcı adı ve şifre gerekli';
+                    return;
+                }
+                
+                loginForm.value.isLoading = true;
+                loginForm.value.error = '';
+                
+                try {
+                    const response = await fetch('/api/auth', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: loginForm.value.username,
+                            password: loginForm.value.password
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        localStorage.setItem('favbox-auth-token', data.token);
                         isAuthenticated.value = true;
+                        loginForm.value = { username: '', password: '', error: '', isLoading: false };
                         await loadBookmarks();
                     } else {
-                        loginForm.value.error = 'Geçersiz bilgiler (Kullanıcı adı: demo, Şifre: demo)';
+                        const errorData = await response.json();
+                        loginForm.value.error = errorData.message || 'Geçersiz kullanıcı bilgileri';
                     }
+                } catch (error) {
+                    loginForm.value.error = 'Bağlantı hatası. Lütfen tekrar deneyin.';
+                } finally {
                     loginForm.value.isLoading = false;
-                };
-
-                const logout = () => { localStorage.removeItem('favbox-auth-token'); isAuthenticated.value = false; bookmarks.value = []; };
-
-                const loadBookmarks = async () => {
-                    isLoadingBookmarks.value = true;
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    bookmarks.value = [
-                        { id: 1, url: 'https://vuejs.org', title: 'Vue.js', description: 'The Progressive JavaScript Framework for building UI on the web.', tags: 'javascript, framework, frontend', created_at: '2025-08-20T10:00:00Z' },
-                        { id: 2, url: 'https://tailwindcss.com', title: 'Tailwind CSS', description: 'A utility-first CSS framework for rapid UI development.', tags: 'css, framework, design, utility-first', created_at: '2025-08-19T11:30:00Z' },
-                        { id: 3, url: 'https://github.com', title: 'GitHub', description: 'Where the world builds software. Millions of developers and companies build, ship, and maintain their software on GitHub.', tags: 'git, code, development, hosting', created_at: '2025-08-18T14:00:00Z' },
-                        { id: 4, url: 'https://figma.com', title: 'Figma', description: 'The collaborative interface design tool.', tags: 'design, ui, ux, collaboration', created_at: '2025-07-25T09:00:00Z' }
-                    ];
+                }
+            };
+            
+            const logout = () => {
+                localStorage.removeItem('favbox-auth-token');
+                isAuthenticated.value = false;
+                bookmarks.value = [];
+                filteredBookmarks.value = [];
+                selectedTags.value = [];
+                searchQuery.value = '';
+            };
+            
+            const loadBookmarks = async () => {
+                isLoadingBookmarks.value = true;
+                
+                try {
+                    const response = await makeAuthRequest('/api/bookmarks');
+                    
+                    if (response.status === 401) {
+                        logout();
+                        return;
+                    }
+                    
+                    if (response.ok) {
+                        bookmarks.value = await response.json();
+                    } else {
+                        console.error('Failed to load bookmarks');
+                    }
+                } catch (error) {
+                    console.error('Load bookmarks error:', error);
+                } finally {
                     isLoadingBookmarks.value = false;
-                };
-
-                const addBookmark = async () => {
-                    bookmarkForm.value.isLoading = true;
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    bookmarks.value.unshift({ id: Date.now(), created_at: new Date().toISOString(), ...bookmarkForm.value });
-                    showAddModal.value = false;
-                    bookmarkForm.value = { url: '', title: '', description: '', tags: '', isLoading: false };
-                };
-
-                const confirmDelete = bookmark => { bookmarkToDelete.value = bookmark; showDeleteConfirm.value = true; };
-                const deleteBookmark = async () => {
-                    bookmarks.value = bookmarks.value.filter(b => b.id !== bookmarkToDelete.value.id);
-                    showDeleteConfirm.value = false;
-                    bookmarkToDelete.value = null;
-                };
-
-                const toggleTag = tag => {
-                    const index = selectedTags.value.indexOf(tag);
-                    if (index > -1) selectedTags.value.splice(index, 1);
-                    else selectedTags.value.push(tag);
-                };
-
-                const getBookmarkFavicon = url => `https://icons.duckduckgo.com/ip3/${new URL(url).hostname}.ico`;
-                const formatDate = dateString => new Date(dateString).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
-
-                onMounted(() => {
-                    initializeTheme();
-                    if (localStorage.getItem('favbox-auth-token')) {
-                        isAuthenticated.value = true;
-                        loadBookmarks();
+                }
+                nextTick(() => {
+                    const masonryContainer = document.querySelector('.masonry');
+                    if (masonryContainer) {
+                        masonryContainer.style.columnCount = 'auto';
+                        masonryContainer.style.columnWidth = '350px';
                     }
                 });
+            };
+            
+            const addBookmark = async () => {
+                if (!bookmarkForm.value.url.trim()) return;
                 
-                return {
-                    isAuthenticated, isDarkMode, bookmarks, searchQuery, selectedTags, viewMode, sortBy, isLoadingBookmarks,
-                    showAddModal, showStatsModal, showDeleteConfirm, bookmarkToDelete, loginForm, bookmarkForm,
-                    allTags, sortedAndFilteredBookmarks,
-                    toggleTheme, setViewMode, setSortBy, login, logout, addBookmark, confirmDelete, deleteBookmark,
-                    toggleTag, getBookmarkFavicon, formatDate
+                try {
+                    new URL(bookmarkForm.value.url);
+                } catch (e) {
+                    alert('Geçerli bir URL girin');
+                    return;
+                }
+                
+                bookmarkForm.value.isLoading = true;
+                
+                try {
+                    const response = await makeAuthRequest('/api/bookmarks', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            url: bookmarkForm.value.url,
+                            title: bookmarkForm.value.title,
+                            description: bookmarkForm.value.description,
+                            tags: bookmarkForm.value.tags
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        closeAddModal();
+                        await loadBookmarks();
+                    } else {
+                        console.error('Failed to add bookmark');
+                    }
+                } catch (error) {
+                    console.error('Add bookmark error:', error);
+                } finally {
+                    bookmarkForm.value.isLoading = false;
+                }
+            };
+            
+            const confirmDelete = (bookmark) => {
+                bookmarkToDelete.value = bookmark;
+                showDeleteConfirm.value = true;
+            };
+            
+            const deleteBookmark = async () => {
+                if (!bookmarkToDelete.value) return;
+                
+                try {
+                    const response = await makeAuthRequest(`/api/bookmarks/${bookmarkToDelete.value.id}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        await loadBookmarks();
+                    }
+                } catch (error) {
+                    console.error('Delete bookmark error:', error);
+                } finally {
+                    showDeleteConfirm.value = false;
+                    bookmarkToDelete.value = null;
+                }
+            };
+            
+            const toggleTag = (tag) => {
+                const index = selectedTags.value.indexOf(tag);
+                if (index > -1) {
+                    selectedTags.value.splice(index, 1);
+                } else {
+                    selectedTags.value.push(tag);
+                }
+            };
+            
+            const clearAllFilters = () => {
+                searchQuery.value = '';
+                selectedTags.value = [];
+                showFilterMenu.value = false;
+            };
+            
+            const getBookmarkFavicon = (url) => {
+                try {
+                    const domain = new URL(url).hostname;
+                    return `https://icons.duckduckgo.com/ip3/${domain}.ico`;
+                } catch (e) {
+                    return 'data:image/svg+xml,<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\" fill=\\"currentColor\\"><path d=\\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z\\"/></svg>';
+                }
+            };
+            
+            const formatDate = (dateString) => {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 0) return 'Bugün';
+                if (diffDays === 1) return 'Dün';
+                if (diffDays < 7) return `${diffDays} gün önce`;
+                if (diffDays < 30) return `${Math.floor(diffDays / 7)} hafta önce`;
+                
+                return date.toLocaleDateString('tr-TR', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+                });
+            };
+            
+            const exportBookmarks = () => {
+                const data = {
+                    version: '1.0',
+                    exportDate: new Date().toISOString(),
+                    bookmarks: bookmarks.value
                 };
-            },
-            template: `
-                <!-- Login Screen -->
-                <div v-if="!isAuthenticated" class="min-h-full flex items-center justify-center p-4">
-                    <div class="w-full max-w-sm">
-                        <div class="text-center mb-8">
-                            <div class="w-20 h-20 gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-4 animate-float">
-                                <i class="fas fa-bookmark text-3xl text-white"></i>
-                            </div>
-                            <h1 class="text-4xl font-bold text-gray-900 dark:text-white">FavBox</h1>
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `favbox-export-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+            
+            // === WATCHERS ===
+            watch(isDarkMode, initializeTheme, { immediate: true });
+            
+            // === LIFECYCLE ===
+            onMounted(async () => {
+                initializeTheme();
+                if (isAuthenticated.value) {
+                    await loadBookmarks();
+                }
+                
+                // Menü ve modal dışına tıklanınca kapanması için
+                window.addEventListener('click', (event) => {
+                    // Sıralama menüsünü kapat
+                    const menu = document.getElementById('sort-menu');
+                    const menuButton = document.getElementById('sort-menu-button');
+                    if (menu && !menu.contains(event.target) && !menuButton.contains(event.target)) {
+                        showMenu.value = false;
+                    }
+                    // Filtre menüsünü kapat
+                    const filterMenu = document.getElementById('filter-menu');
+                    const filterButton = document.getElementById('filter-menu-button');
+                    if (filterMenu && !filterMenu.contains(event.target) && !filterButton.contains(event.target)) {
+                        showFilterMenu.value = false;
+                    }
+                });
+            });
+            
+            return {
+                // State
+                isAuthenticated, isDarkMode, bookmarks, filteredBookmarks,
+                searchQuery, selectedTags, viewMode, sortBy, isLoading, isLoadingBookmarks,
+                showAddModal, showStatsModal, showDeleteConfirm, bookmarkToDelete,
+                showMenu, showFilterMenu,
+                loginForm, bookmarkForm,
+                
+                // Computed
+                allTags, bookmarkStats, sortedAndFilteredBookmarks,
+                
+                // Methods
+                toggleTheme, setViewMode, setSortBy, login, logout,
+                loadBookmarks, addBookmark, confirmDelete, deleteBookmark,
+                toggleTag, clearAllFilters, getBookmarkFavicon, formatDate,
+                exportBookmarks, openAddModal, closeAddModal, openStatsModal, closeStatsModal
+            };
+        },
+        template: `
+<div v-if="!isAuthenticated" class="h-full flex items-center justify-center p-4 dark:bg-gray-950 transition-colors duration-500">
+    <div class="glass-effect rounded-3xl p-8 max-w-lg w-full text-center text-gray-800 dark:text-gray-200 shadow-xl border border-gray-200 dark:border-gray-800 animate-fade-in">
+        <h1 class="text-4xl font-bold mb-2 text-gradient">FavBox</h1>
+        <p class="text-sm mb-6">Professional Bookmark Manager</p>
+        
+        <form @submit.prevent="login" class="space-y-4">
+            <div class="relative search-highlight rounded-xl">
+                <input
+                    v-model="loginForm.username"
+                    type="text"
+                    placeholder="Kullanıcı Adı"
+                    class="w-full px-5 py-3 rounded-xl bg-gray-100 dark:bg-gray-850 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors duration-200 shadow-inner"
+                    autocomplete="username"
+                    :disabled="loginForm.isLoading"
+                >
+            </div>
+            <div class="relative search-highlight rounded-xl">
+                <input
+                    v-model="loginForm.password"
+                    type="password"
+                    placeholder="Şifre"
+                    class="w-full px-5 py-3 rounded-xl bg-gray-100 dark:bg-gray-850 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors duration-200 shadow-inner"
+                    autocomplete="current-password"
+                    :disabled="loginForm.isLoading"
+                >
+            </div>
+            
+            <button
+                type="submit"
+                class="w-full py-3 px-6 rounded-xl font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-950"
+                :disabled="loginForm.isLoading"
+            >
+                <i v-if="loginForm.isLoading" class="fas fa-spinner fa-spin mr-2"></i>
+                <span v-else>Giriş Yap</span>
+            </button>
+        </form>
+        
+        <p v-if="loginForm.error" class="mt-4 text-red-500 text-sm animate-fade-in">{{ loginForm.error }}</p>
+    </div>
+</div>
+
+<div v-else class="h-full flex flex-col">
+    <header class="glass-effect p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between sticky top-0 z-50 animate-slide-up">
+        <div class="flex items-center space-x-4">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-50">FavBox</h1>
+            
+            <div class="relative search-highlight rounded-full hidden md:flex w-96">
+                <input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="Bookmarkları ara..."
+                    class="w-full px-5 py-2.5 rounded-full bg-gray-100 dark:bg-gray-850 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors duration-200 shadow-inner"
+                >
+            </div>
+        </div>
+        
+        <nav class="flex items-center space-x-3">
+            <button
+                @click="openAddModal"
+                class="tooltip bg-primary-600 text-white rounded-full p-3 shadow-lg hover:bg-primary-700 transition-colors duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-950"
+                data-tooltip="Yeni Ekle"
+            >
+                <i class="fas fa-plus w-5 h-5"></i>
+            </button>
+
+            <button
+                @click="openStatsModal"
+                class="tooltip bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full p-3 shadow-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-950"
+                data-tooltip="İstatistikler"
+            >
+                <i class="fas fa-chart-line w-5 h-5"></i>
+            </button>
+
+            <button
+                @click="toggleTheme"
+                class="w-14 h-8 flex items-center rounded-full p-1 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-950"
+                :class="isDarkMode ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-800'"
+            >
+                <div
+                    class="w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center text-xs"
+                    :class="isDarkMode ? 'translate-x-6 bg-white text-gray-900' : 'bg-gray-500 text-white'"
+                >
+                    <i class="fas" :class="isDarkMode ? 'fa-moon' : 'fa-sun'"></i>
+                </div>
+            </button>
+
+            <button
+                @click="logout"
+                class="tooltip bg-red-600 text-white rounded-full p-3 shadow-lg hover:bg-red-700 transition-colors duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-950"
+                data-tooltip="Çıkış Yap"
+            >
+                <i class="fas fa-sign-out-alt w-5 h-5"></i>
+            </button>
+        </nav>
+    </header>
+
+    <main class="flex-1 overflow-auto p-4 md:p-8">
+        <div class="flex flex-col md:flex-row items-center justify-between mb-6 space-y-4 md:space-y-0 animate-fade-in">
+            <div class="relative search-highlight rounded-full w-full md:hidden">
+                <input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="Bookmarkları ara..."
+                    class="w-full px-5 py-2.5 rounded-full bg-gray-100 dark:bg-gray-850 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors duration-200 shadow-inner"
+                >
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <button
+                    @click="setViewMode('grid')"
+                    class="tooltip rounded-full p-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-950"
+                    :class="viewMode === 'grid' ? 'bg-primary-600 text-white' : 'bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200'"
+                    data-tooltip="Izgara Görünümü"
+                >
+                    <i class="fas fa-th-large w-5 h-5"></i>
+                </button>
+                <button
+                    @click="setViewMode('list')"
+                    class="tooltip rounded-full p-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-950"
+                    :class="viewMode === 'list' ? 'bg-primary-600 text-white' : 'bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200'"
+                    data-tooltip="Liste Görünümü"
+                >
+                    <i class="fas fa-list w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="flex items-center space-x-4 relative">
+                <div class="relative">
+                    <button
+                        id="sort-menu-button"
+                        @click="showMenu = !showMenu"
+                        class="px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-semibold transition-colors duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-950"
+                    >
+                        <i class="fas fa-sort mr-2"></i> {{ sortBy === 'newest' ? 'En Yeni' : sortBy === 'oldest' ? 'En Eski' : sortBy === 'title' ? 'Başlığa Göre' : 'Domain' }}
+                    </button>
+                    <div
+                        v-if="showMenu"
+                        id="sort-menu"
+                        class="absolute right-0 mt-2 w-48 rounded-lg shadow-lg glass-effect z-10 animate-scale-in"
+                    >
+                        <div class="py-1">
+                            <button
+                                @click="setSortBy('newest')"
+                                class="w-full text-left px-4 py-2 text-sm rounded-md transition-colors duration-200"
+                                :class="sortBy === 'newest' ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'"
+                            >
+                                En Yeni
+                            </button>
+                            <button
+                                @click="setSortBy('oldest')"
+                                class="w-full text-left px-4 py-2 text-sm rounded-md transition-colors duration-200"
+                                :class="sortBy === 'oldest' ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'"
+                            >
+                                En Eski
+                            </button>
+                            <button
+                                @click="setSortBy('title')"
+                                class="w-full text-left px-4 py-2 text-sm rounded-md transition-colors duration-200"
+                                :class="sortBy === 'title' ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'"
+                            >
+                                Başlığa Göre
+                            </button>
+                            <button
+                                @click="setSortBy('domain')"
+                                class="w-full text-left px-4 py-2 text-sm rounded-md transition-colors duration-200"
+                                :class="sortBy === 'domain' ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'"
+                            >
+                                Domaine Göre
+                            </button>
                         </div>
-                        <div class="glass-effect rounded-3xl p-8">
-                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">Giriş Yap</h2>
-                            <form @submit.prevent="login" class="space-y-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kullanıcı Adı</label>
-                                    <input v-model="loginForm.username" type="text" class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500" placeholder="demo" />
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <button
+                        id="filter-menu-button"
+                        @click="showFilterMenu = !showFilterMenu"
+                        class="px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-semibold transition-colors duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-950"
+                    >
+                        <i class="fas fa-filter mr-2"></i> Etiketler
+                    </button>
+                    <div
+                        v-if="showFilterMenu"
+                        id="filter-menu"
+                        class="absolute right-0 mt-2 w-48 rounded-lg shadow-lg glass-effect z-10 animate-scale-in max-h-64 overflow-y-auto"
+                    >
+                        <div class="p-2">
+                            <div v-if="allTags.length > 0">
+                                <div v-for="tag in allTags" :key="tag" class="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="toggleTag(tag)">
+                                    <input type="checkbox" :checked="selectedTags.includes(tag)" class="form-checkbox h-4 w-4 text-primary-600 rounded">
+                                    <span class="text-sm text-gray-800 dark:text-gray-200">{{ tag }}</span>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Şifre</label>
-                                    <input v-model="loginForm.password" type="password" class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500" placeholder="demo" />
-                                </div>
-                                <button type="submit" :disabled="loginForm.isLoading" class="w-full flex justify-center py-3 px-4 rounded-xl text-white gradient-primary hover:shadow-lg disabled:opacity-50">
-                                    <i v-if="loginForm.isLoading" class="fas fa-spinner fa-spin mr-2"></i> {{ loginForm.isLoading ? 'Giriş yapılıyor...' : 'Giriş Yap' }}
+                                <button
+                                    @click="clearAllFilters"
+                                    class="w-full mt-2 px-4 py-2 text-sm rounded-md bg-red-500 text-white transition-colors duration-200 hover:bg-red-600"
+                                >
+                                    Filtreleri Temizle
                                 </button>
-                            </form>
-                            <div v-if="loginForm.error" class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg text-sm">
-                                {{ loginForm.error }}
+                            </div>
+                            <div v-else class="text-center p-4 text-sm text-gray-500">
+                                Etiket bulunamadı.
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Main App -->
-                <div v-else class="min-h-full">
-                    <header class="bg-white/95 dark:bg-gray-900/95 shadow-sm border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40 backdrop-blur-lg">
-                        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center"><i class="fas fa-bookmark text-white"></i></div>
-                                <div>
-                                    <h1 class="text-xl font-bold text-gray-900 dark:text-white">FavBox</h1>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ sortedAndFilteredBookmarks.length }} / {{ bookmarks.length }} bookmarks</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <div class="hidden sm:flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-                                    <button @click="setViewMode('grid')" :class="{'bg-white dark:bg-gray-700 shadow-sm': viewMode === 'grid'}" class="p-2 rounded-md" data-tooltip="Grid" title="Grid View"><i class="fas fa-th text-sm"></i></button>
-                                    <button @click="setViewMode('list')" :class="{'bg-white dark:bg-gray-700 shadow-sm': viewMode === 'list'}" class="p-2 rounded-md" data-tooltip="List" title="List View"><i class="fas fa-list text-sm"></i></button>
-                                    <button @click="setViewMode('masonry')" :class="{'bg-white dark:bg-gray-700 shadow-sm': viewMode === 'masonry'}" class="p-2 rounded-md" data-tooltip="Masonry" title="Masonry View"><i class="fas fa-columns text-sm"></i></button>
-                                </div>
-                                <button @click="toggleTheme" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><i :class="isDarkMode ? 'fas fa-sun' : 'fas fa-moon'"></i></button>
-                                <button @click="logout" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-red-500"><i class="fas fa-sign-out-alt"></i></button>
-                                <button @click="showAddModal = true" class="gradient-primary text-white px-4 py-2 rounded-xl font-medium hover:shadow-lg flex items-center space-x-2"><i class="fas fa-plus"></i><span class="hidden sm:inline">Add</span></button>
-                            </div>
-                        </div>
-                    </header>
+        <div v-if="isLoadingBookmarks" class="text-center py-20 animate-fade-in">
+            <i class="fas fa-spinner fa-spin text-4xl text-primary-500 mb-4"></i>
+            <p class="text-lg text-gray-600 dark:text-gray-400">Bookmarklar yükleniyor...</p>
+        </div>
 
-                    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        <input v-model="searchQuery" type="text" placeholder="Search all bookmarks..." class="w-full pl-4 pr-4 py-4 mb-8 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500" />
-                        
-                        <div v-if="isLoadingBookmarks" class="text-center py-16"><i class="fas fa-spinner fa-spin text-4xl text-blue-500"></i></div>
-                        <div v-else-if="!sortedAndFilteredBookmarks.length" class="text-center py-16">
-                            <h3 class="text-xl font-semibold">No Bookmarks Found</h3>
-                            <p class="text-gray-600 dark:text-gray-400">Try a different search or add a new bookmark.</p>
-                        </div>
+        <div v-else-if="sortedAndFilteredBookmarks.length > 0">
+            <div :class="viewMode === 'grid' ? 'masonry' : 'space-y-4'">
+                <div
+                    v-for="bookmark in sortedAndFilteredBookmarks"
+                    :key="bookmark.id"
+                    class="bookmark-card glass-effect rounded-2xl p-6 shadow-xl relative overflow-hidden transition-all duration-300"
+                    :class="viewMode === 'grid' ? 'masonry-item' : 'flex items-start space-x-4'"
+                >
+                    <div class="absolute top-4 right-4 flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <a :href="bookmark.url" target="_blank" class="text-white p-2 rounded-full bg-primary-600 hover:bg-primary-700 transition-colors tooltip" data-tooltip="Siteyi Ziyaret Et"><i class="fas fa-external-link-alt"></i></a>
+                        <button @click="confirmDelete(bookmark)" class="text-white p-2 rounded-full bg-red-600 hover:bg-red-700 transition-colors tooltip" data-tooltip="Sil"><i class="fas fa-trash-alt"></i></button>
+                    </div>
 
-                        <!-- Grid View -->
-                        <div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            <div v-for="bookmark in sortedAndFilteredBookmarks" :key="bookmark.id" class="bookmark-card bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-xl border border-gray-200 dark:border-gray-700 group">
-                                <img :src="getBookmarkFavicon(bookmark.url)" class="w-8 h-8 rounded-lg mb-4" />
-                                <h3 class="font-semibold text-gray-900 dark:text-white truncate">{{ bookmark.title }}</h3>
-                                <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">{{ bookmark.description }}</p>
-                                <div class="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
-                                    <span class="text-xs text-gray-500">{{ formatDate(bookmark.created_at) }}</span>
-                                    <div>
-                                        <a :href="bookmark.url" target="_blank" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><i class="fas fa-external-link-alt text-xs"></i></a>
-                                        <button @click="confirmDelete(bookmark)" class="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 text-red-500"><i class="fas fa-trash text-xs"></i></button>
-                                    </div>
-                                </div>
-                            </div>
+                    <div :class="viewMode === 'grid' ? '' : 'flex-1 space-y-2'">
+                        <div class="flex items-center space-x-3 mb-2">
+                            <img :src="getBookmarkFavicon(bookmark.url)" alt="Favicon" class="w-6 h-6 rounded-full shadow-md">
+                            <a :href="bookmark.url" target="_blank" class="text-lg font-semibold text-gray-900 dark:text-gray-50 hover:underline transition-colors line-clamp-1">{{ bookmark.title || 'Başlık Yok' }}</a>
                         </div>
-                        <!-- List View -->
-                        <div v-else-if="viewMode === 'list'" class="space-y-3">
-                             <div v-for="bookmark in sortedAndFilteredBookmarks" :key="bookmark.id" class="bookmark-card bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm hover:shadow-lg border border-gray-200 dark:border-gray-700 flex items-center space-x-4">
-                                <img :src="getBookmarkFavicon(bookmark.url)" class="w-10 h-10 rounded-lg flex-shrink-0" />
-                                <div class="flex-1 min-w-0">
-                                    <h3 class="font-semibold truncate">{{ bookmark.title }}</h3>
-                                    <a :href="bookmark.url" target="_blank" class="text-blue-500 text-sm truncate">{{ bookmark.url }}</a>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button @click="confirmDelete(bookmark)" class="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 text-red-500"><i class="fas fa-trash"></i></button>
-                                    <a :href="bookmark.url" target="_blank" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><i class="fas fa-external-link-alt"></i></a>
-                                </div>
-                            </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">{{ bookmark.description || 'Açıklama yok' }}</p>
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            <span v-for="tag in bookmark.tags?.split(',').map(t => t.trim()).filter(t => t)" :key="tag" class="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full font-medium">{{ tag }}</span>
                         </div>
-                         <!-- Masonry View -->
-                        <div v-else class="masonry">
-                            <div v-for="bookmark in sortedAndFilteredBookmarks" :key="bookmark.id" class="masonry-item bookmark-card bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-lg border border-gray-200 dark:border-gray-700">
-                                <img :src="getBookmarkFavicon(bookmark.url)" class="w-8 h-8 rounded-lg mb-4" />
-                                <h3 class="font-semibold text-gray-900 dark:text-white">{{ bookmark.title }}</h3>
-                                <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">{{ bookmark.description }}</p>
-                                <div class="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
-                                    <span class="text-xs text-gray-500">{{ formatDate(bookmark.created_at) }}</span>
-                                    <a :href="bookmark.url" target="_blank" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><i class="fas fa-external-link-alt text-xs"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                    </main>
+                        <p class="mt-4 text-xs text-gray-400 dark:text-gray-600">{{ formatDate(bookmark.created_at) }}</p>
+                    </div>
                 </div>
+            </div>
+        </div>
+        
+        <div v-else class="text-center py-20 animate-fade-in">
+            <i class="fas fa-box-open text-6xl text-gray-400 dark:text-gray-700 mb-4"></i>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Hiç bookmark bulunamadı.</h2>
+            <p class="text-gray-500 dark:text-gray-400">Yeni bir tane eklemek için sağ üstteki '+' butonunu kullanın.</p>
+        </div>
+    </main>
+</div>
 
-                <!-- Modals -->
-                <Dialog :open="showAddModal" @close="showAddModal = false" class="relative z-50">
-                    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-                    <div class="fixed inset-0 flex items-center justify-center p-4">
-                        <DialogPanel class="w-full max-w-md bg-white dark:bg-gray-800 rounded-3xl p-6">
-                            <h3 class="text-xl font-semibold mb-6">Add New Bookmark</h3>
-                            <form @submit.prevent="addBookmark" class="space-y-4">
-                                <input v-model="bookmarkForm.url" type="url" required placeholder="URL" class="w-full p-3 border rounded-xl" />
-                                <input v-model="bookmarkForm.title" type="text" placeholder="Title" class="w-full p-3 border rounded-xl" />
-                                <textarea v-model="bookmarkForm.description" placeholder="Description" class="w-full p-3 border rounded-xl"></textarea>
-                                <input v-model="bookmarkForm.tags" type="text" placeholder="Tags (comma separated)" class="w-full p-3 border rounded-xl" />
-                                <div class="flex justify-end space-x-3 pt-4">
-                                    <button type="button" @click="showAddModal = false" class="px-6 py-3 bg-gray-200 rounded-xl">Cancel</button>
-                                    <button type="submit" :disabled="bookmarkForm.isLoading" class="px-6 py-3 bg-blue-500 text-white rounded-xl disabled:opacity-50">Add</button>
-                                </div>
-                            </form>
-                        </DialogPanel>
-                    </div>
-                </Dialog>
-                <Dialog :open="showDeleteConfirm" @close="showDeleteConfirm = false" class="relative z-50">
-                    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-                    <div class="fixed inset-0 flex items-center justify-center p-4">
-                        <DialogPanel class="w-full max-w-sm bg-white dark:bg-gray-800 rounded-3xl p-6 text-center">
-                            <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
-                            <h3 class="text-lg font-semibold mb-2">Delete Bookmark?</h3>
-                            <p class="text-gray-600 dark:text-gray-400 mb-6">This action cannot be undone.</p>
-                            <div class="flex space-x-3">
-                                <button @click="showDeleteConfirm = false" class="flex-1 py-3 bg-gray-200 rounded-xl">Cancel</button>
-                                <button @click="deleteBookmark" class="flex-1 py-3 bg-red-600 text-white rounded-xl">Delete</button>
-                            </div>
-                        </DialogPanel>
-                    </div>
-                </Dialog>
-            `
-        };
+<div v-if="showAddModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950 bg-opacity-70 dark:bg-opacity-90 transition-opacity animate-fade-in">
+    <div class="glass-effect rounded-3xl p-8 max-w-lg w-full text-gray-800 dark:text-gray-200 shadow-xl border border-gray-200 dark:border-gray-800 animate-slide-up relative">
+        <h2 class="text-2xl font-bold mb-4">Yeni Bookmark Ekle</h2>
+        
+        <button @click="closeAddModal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+            <i class="fas fa-times-circle text-2xl"></i>
+        </button>
 
-        const app = createApp(FavBoxApp);
+        <form @submit.prevent="addBookmark" class="space-y-4">
+            <div>
+                <label for="url" class="block text-sm font-medium mb-1">URL</label>
+                <input
+                    v-model="bookmarkForm.url"
+                    type="url"
+                    id="url"
+                    class="w-full px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-850 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                    placeholder="https://örnek.com"
+                    required
+                >
+            </div>
+            <div>
+                <label for="title" class="block text-sm font-medium mb-1">Başlık (Opsiyonel)</label>
+                <input
+                    v-model="bookmarkForm.title"
+                    type="text"
+                    id="title"
+                    class="w-full px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-850 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                    placeholder="Sayfa Başlığı"
+                >
+            </div>
+            <div>
+                <label for="description" class="block text-sm font-medium mb-1">Açıklama (Opsiyonel)</label>
+                <textarea
+                    v-model="bookmarkForm.description"
+                    id="description"
+                    rows="3"
+                    class="w-full px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-850 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                    placeholder="Kısa bir açıklama yazın..."
+                ></textarea>
+            </div>
+            <div>
+                <label for="tags" class="block text-sm font-medium mb-1">Etiketler (Virgülle ayırın)</label>
+                <input
+                    v-model="bookmarkForm.tags"
+                    type="text"
+                    id="tags"
+                    class="w-full px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-850 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                    placeholder="etiket1, etiket2"
+                >
+            </div>
 
-        // Headless UI'dan gelen global objeyi (HeadlessUI) alıp içindeki
-        // tüm bileşenleri (Dialog, Menu, Switch vb.) Vue'ya global olarak kaydediyoruz.
-        if (window.HeadlessUI) {
-            for (const componentName in window.HeadlessUI) {
-                app.component(componentName, window.HeadlessUI[componentName]);
-            }
-        }
+            <button
+                type="submit"
+                class="w-full py-3 px-6 rounded-xl font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-950"
+                :disabled="bookmarkForm.isLoading"
+            >
+                <i v-if="bookmarkForm.isLoading" class="fas fa-spinner fa-spin mr-2"></i>
+                <span v-else>Kaydet</span>
+            </button>
+        </form>
+    </div>
+</div>
 
-        app.mount('#app');
-    </script>
+<div v-if="showStatsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950 bg-opacity-70 dark:bg-opacity-90 transition-opacity animate-fade-in">
+    <div class="glass-effect rounded-3xl p-8 max-w-lg w-full text-gray-800 dark:text-gray-200 shadow-xl border border-gray-200 dark:border-gray-800 animate-slide-up relative">
+        <h2 class="text-2xl font-bold mb-4 text-gradient">İstatistikler</h2>
+        
+        <button @click="closeStatsModal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+            <i class="fas fa-times-circle text-2xl"></i>
+        </button>
+
+        <div class="grid grid-cols-2 gap-4 text-center mt-6">
+            <div class="p-4 rounded-xl glass-effect-subtle">
+                <p class="text-4xl font-bold text-gradient">{{ bookmarkStats.total }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Toplam Bookmark</p>
+            </div>
+            <div class="p-4 rounded-xl glass-effect-subtle">
+                <p class="text-4xl font-bold text-gradient">{{ bookmarkStats.thisMonth }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Bu Ay Eklenen</p>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <h3 class="text-lg font-semibold mb-2">En Çok Kullanılan Etiketler</h3>
+            <div v-if="Object.keys(bookmarkStats.topTags).length > 0" class="flex flex-wrap gap-2">
+                <span v-for="(count, tag) in bookmarkStats.topTags" :key="tag" class="px-3 py-1 bg-gray-200 dark:bg-gray-800 rounded-full text-sm font-medium">{{ tag }} ({{ count }})</span>
+            </div>
+            <p v-else class="text-sm text-gray-500">Etiket bulunamadı.</p>
+        </div>
+
+        <div class="mt-6">
+            <h3 class="text-lg font-semibold mb-2">Farklı Domainler</h3>
+            <p class="text-sm text-gray-500">{{ bookmarkStats.domains.size }} farklı domain bulunuyor.</p>
+        </div>
+        
+        <div class="mt-6 flex justify-end">
+            <button @click="exportBookmarks" class="px-4 py-2 bg-primary-600 text-white rounded-lg font-medium transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                <i class="fas fa-download mr-2"></i> Dışa Aktar
+            </button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950 bg-opacity-70 dark:bg-opacity-90 transition-opacity animate-fade-in">
+    <div class="glass-effect rounded-3xl p-8 max-w-lg w-full text-center text-gray-800 dark:text-gray-200 shadow-xl border border-gray-200 dark:border-gray-800 animate-scale-in">
+        <div class="flex flex-col items-center justify-center space-y-4">
+            <i class="fas fa-exclamation-triangle text-6xl text-red-500 animate-float"></i>
+            <h3 class="text-2xl font-bold">Emin Misiniz?</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+                Bu işlemi geri alamazsınız. '<span class="font-semibold text-gray-900 dark:text-gray-50">{{ bookmarkToDelete?.title || bookmarkToDelete?.url }}</span>' bookmark'ı kalıcı olarak silinecek.
+            </p>
+            <div class="flex space-x-4 mt-6">
+                <button
+                    @click="showDeleteConfirm = false"
+                    class="px-6 py-3 rounded-xl font-semibold bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                >
+                    İptal
+                </button>
+                <button
+                    @click="deleteBookmark"
+                    class="px-6 py-3 rounded-xl font-semibold bg-red-600 text-white hover:bg-red-700 transition-colors"
+                >
+                    Sil
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+        `
+    };
+
+    createApp(FavBoxApp).mount('#app');
+</script>
 </body>
 </html>
