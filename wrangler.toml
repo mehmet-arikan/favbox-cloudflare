@@ -5,7 +5,3 @@ compatibility_date = "2024-08-15"
 binding = "DB"
 database_name = "favbox-db"
 database_id = "5fe6cbd4-ddd7-40a2-9fcd-c717611451fa"
-
-[vars]
-AUTH_USERNAME = "admin"
-AUTH_PASSWORD = "107191*"
