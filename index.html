@@ -313,7 +313,12 @@
                     
                     // Domains
                     try {
-                        stats.domains.add(new URL(bookmark.url).hostname);
+                        if (window.URL) {
+                            stats.domains.add(new URL(bookmark.url).hostname);
+                        } else {
+                            const hostname = extractHostname(bookmark.url);
+                            if (hostname) stats.domains.add(hostname);
+                        }
                     } catch (e) {
                         // Invalid URL, skip
                     }
@@ -370,8 +375,14 @@
                     case 'domain':
                         filtered.sort((a, b) => {
                             try {
-                                const domainA = new URL(a.url).hostname;
-                                const domainB = new URL(b.url).hostname;
+                                let domainA, domainB;
+                                if (window.URL) {
+                                    domainA = new URL(a.url).hostname;
+                                    domainB = new URL(b.url).hostname;
+                                } else {
+                                    domainA = extractHostname(a.url);
+                                    domainB = extractHostname(b.url);
+                                }
                                 return domainA.localeCompare(domainB);
                             } catch (e) {
                                 return 0;
@@ -527,9 +538,9 @@
             const addBookmark = async () => {
                 if (!bookmarkForm.value.url.trim()) return;
                 
-                try {
-                    new URL(bookmarkForm.value.url);
-                } catch (e) {
+                // URL validation - daha uyumlu yaklaşım
+                const url = bookmarkForm.value.url;
+                if (!isValidUrl(url)) {
                     alert('Geçerli bir URL girin');
                     return;
                 }
@@ -557,6 +568,22 @@
                     console.error('Add bookmark error:', error);
                 } finally {
                     bookmarkForm.value.isLoading = false;
+                }
+            };
+            
+            // URL validation fonksiyonu
+            const isValidUrl = (string) => {
+                try {
+                    if (window.URL) {
+                        new URL(string);
+                        return true;
+                    } else {
+                        // Basit regex kontrolü
+                        const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+                        return urlPattern.test(string);
+                    }
+                } catch (_) {
+                    return false;
                 }
             };
             
@@ -601,10 +628,37 @@
             
             const getBookmarkFavicon = (url) => {
                 try {
-                    const domain = new URL(url).hostname;
+                    // URL constructor fallback için
+                    const urlObj = window.URL ? new URL(url) : { hostname: extractHostname(url) };
+                    const domain = urlObj.hostname;
                     return `https://icons.duckduckgo.com/ip3/${domain}.ico`;
                 } catch (e) {
+                    // Fallback: URL'den hostname'i manuel olarak çıkar
+                    const domain = extractHostname(url);
+                    if (domain) {
+                        return `https://icons.duckduckgo.com/ip3/${domain}.ico`;
+                    }
                     return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
+                }
+            };
+            
+            // URL'den hostname çıkarmak için yardımcı fonksiyon
+            const extractHostname = (url) => {
+                try {
+                    let hostname;
+                    // http:// veya https:// ile başlıyorsa
+                    if (url.indexOf("://") > -1) {
+                        hostname = url.split('/')[2];
+                    } else {
+                        hostname = url.split('/')[0];
+                    }
+                    // Port numarasını kaldır
+                    hostname = hostname.split(':')[0];
+                    // www. kaldır
+                    hostname = hostname.replace('www.', '');
+                    return hostname;
+                } catch (e) {
+                    return '';
                 }
             };
             
@@ -685,7 +739,8 @@
                 loadBookmarks, addBookmark, confirmDelete, deleteBookmark,
                 toggleTag, clearAllFilters, getBookmarkFavicon, formatDate,
                 exportBookmarks, openAddModal, closeAddModal, openStatsModal, closeStatsModal,
-                openSettingsModal, closeSettingsModal, saveSettings, getProxiedUrl
+                openSettingsModal, closeSettingsModal, saveSettings, getProxiedUrl,
+                extractHostname, isValidUrl
             };
         },
         template: `
@@ -951,7 +1006,7 @@
                         
                         <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                             <span>{{ formatDate(bookmark.created_at) }}</span>
-                            <span class="truncate max-w-xs">{{ new URL(bookmark.url).hostname }}</span>
+                            <span class="truncate max-w-xs">{{ extractHostname(bookmark.url) || bookmark.url }}</span>
                         </div>
                     </div>
                 </div>
