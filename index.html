@@ -236,9 +236,9 @@
                 
             const showSettingsModal = ref(false);
             const settings = ref({
-                proxyEnabled: JSON.parse(localStorage.getItem('favbox-proxy-enabled') || 'false'),
+                proxyEnabled: localStorage.getItem('favbox-proxy-enabled') === 'true',
                 proxyUrl: localStorage.getItem('favbox-proxy-url') || '',
-                showDescriptions: JSON.parse(localStorage.getItem('favbox-show-descriptions') || 'true')
+                showDescriptions: localStorage.getItem('favbox-show-descriptions') !== 'false'
             });
             const settingsForm = ref({ ...settings.value });
             
@@ -413,18 +413,24 @@
             const closeSettingsModal = () => showSettingsModal.value = false;
 
             const saveSettings = () => {
-                Object.keys(settingsForm.value).forEach(key => {
-                    localStorage.setItem(`favbox-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`, 
-                                       JSON.stringify(settingsForm.value[key]));
-                });
+                // Değerleri direkt string olarak kaydet, JSON.stringify kullanma
+                localStorage.setItem('favbox-proxy-enabled', settingsForm.value.proxyEnabled.toString());
+                localStorage.setItem('favbox-proxy-url', settingsForm.value.proxyUrl);
+                localStorage.setItem('favbox-show-descriptions', settingsForm.value.showDescriptions.toString());
+                
                 settings.value = { ...settingsForm.value };
                 showSettingsModal.value = false;
+                
+                console.log('Settings saved:', settings.value); // Debug için
             };
 
             const getProxiedUrl = (url) => {
                 if (settings.value.proxyEnabled && settings.value.proxyUrl) {
-                    // Basitçe: proxy + url
-                    return settings.value.proxyUrl + url;
+                    const finalUrl = settings.value.proxyUrl + url;
+                    console.log('Proxy URL:', settings.value.proxyUrl);
+                    console.log('Original URL:', url);
+                    console.log('Final URL:', finalUrl);
+                    return finalUrl;
                 }
                 return url;
             };
@@ -1103,6 +1109,16 @@
         </button>
 
         <div class="space-y-6">
+            <!-- Debug bilgisi -->
+            <div v-if="settings.proxyEnabled" class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <h4 class="font-semibold text-blue-800 dark:text-blue-200 mb-2">Debug Bilgisi</h4>
+                <div class="text-xs text-blue-600 dark:text-blue-300 space-y-1">
+                    <div>Proxy Enabled: {{ settings.proxyEnabled }}</div>
+                    <div>Proxy URL: "{{ settings.proxyUrl }}"</div>
+                    <div>Proxy URL Length: {{ settings.proxyUrl.length }}</div>
+                </div>
+            </div>
+            
             <!-- Proxy Settings -->
             <div class="p-6 rounded-xl bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30">
                 <h3 class="text-lg font-semibold mb-4 flex items-center">
