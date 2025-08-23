@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📱 FavBox - Cloudflare D1 Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 420px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            -webkit-appearance: none;
+            font-family: inherit;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            -webkit-appearance: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #667eea;
+            border: 1px solid #dee2e6;
+            margin-top: 10px;
+        }
+        
+        .bookmark-item {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #667eea;
+        }
+        
+        .bookmark-url {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            display: block;
+            margin-bottom: 8px;
+            word-break: break-all;
+        }
+        
+        .bookmark-url:hover {
+            text-decoration: underline;
+        }
+        
+        .bookmark-title {
+            color: #333;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .bookmark-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .bookmark-tags {
+            margin: 8px 0;
+        }
+        
+        .tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin: 2px 4px 2px 0;
+        }
+        
+        .bookmark-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 14px;
+            border-radius: 8px;
+            width: auto;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+            font-style: italic;
+        }
+        
+        .error {
+            background: #dc3545;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .success {
+            background: #28a745;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .logout-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* iOS Safe Area */
+        @supports(padding: max(0px)) {
+            body {
+                padding-left: max(20px, env(safe-area-inset-left));
+                padding-right: max(20px, env(safe-area-inset-right));
+                padding-top: max(20px, env(safe-area-inset-top));
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(-50%) translateY(0); opacity: 1; }
+            to { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+        }
+
+        .floating-message {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            max-width: 90%;
+            animation: slideIn 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Ekranı -->
+        <div id="login-screen" class="card">
+            <div class="header">
+                <h1>🔖 FavBox</h1>
+                <p class="subtitle">Cloudflare D1 Edition</p>
+            </div>
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Kullanıcı Adı" autocomplete="username" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Şifre" autocomplete="current-password" required>
+            </div>
+            <button class="btn btn-primary" onclick="login()">🚀 Giriş Yap</button>
+            <div id="login-error"></div>
+        </div>
+
+        <!-- Ana Ekran -->
+        <div id="main-screen" style="display: none;">
+            <!-- Header -->
+            <div class="card">
+                <div class="logout-section">
+                    <div>
+                        <h1>🔖 FavBox</h1>
+                        <p class="subtitle">D1 Database Connected</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="logout()" style="width: auto; padding: 10px 20px;">Çıkış</button>
+                </div>
+                <div class="stats">
+                    <span id="bookmark-count">Linkler yükleniyor...</span>
+                    <span id="last-updated"></span>
+                </div>
+            </div>
+
+            <!-- URL Ekleme -->
+            <div class="card">
+                <h2 style="margin-bottom: 20px; color: #333;">📎 Yeni Link Ekle</h2>
+                <div class="input-group">
+                    <input type="url" id="url-input" placeholder="https://example.com" required>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="title-input" placeholder="Başlık (otomatik alınır)">
+                </div>
+                <div class="input-group">
+                    <textarea id="description-input" placeholder="Açıklama (opsiyonel)" rows="3"></textarea>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="tags-input" placeholder="etiket1, etiket2, etiket3">
+                </div>
+                <button class="btn btn-primary" onclick="addBookmark()" id="add-btn">✨ Ekle</button>
+            </div>
+
+            <!-- Arama -->
+            <div class="card">
+                <input type="text" id="search-input" placeholder="🔍 Link ara..." oninput="searchBookmarks(this.value)">
+            </div>
+
+            <!-- Bookmarks -->
+            <div id="bookmarks-container"></div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="card loading" style="display: none;">
+            🔄 Yükleniyor...
+        </div>
+    </div>
+
+    <script>
+        // Global değişkenler
+        let bookmarks = [];
+        let filteredBookmarks = [];
+        let authToken = localStorage.getItem('favbox-auth-token');
+
+        // Sayfa yükleme
+        window.addEventListener('load', function() {
+            if (authToken) {
+                showMainScreen();
+                loadBookmarks();
+            } else {
+                showLoginScreen();
+            }
+        });
+
+        function showLoginScreen() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'block';
+            document.getElementById('main-screen').style.display = 'none';
+        }
+
+        function showMainScreen() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-screen').style.display = 'block';
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showMessage(message, type = 'error') {
+            // Mevcut mesajları temizle
+            document.querySelectorAll('.floating-message').forEach(el => el.remove());
+
+            const div = document.createElement('div');
+            div.className = `${type} floating-message`;
+            div.textContent = message;
+            document.body.appendChild(div);
+            
+            setTimeout(() => {
+                if (div.parentNode) {
+                    div.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => div.remove(), 300);
+                }
+            }, 3000);
+        }
+
+        // Authentication
+        async function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorDiv = document.getElementById('login-error');
+
+            if (!username || !password) {
+                errorDiv.innerHTML = '<div class="error">Kullanıcı adı ve şifre gerekli</div>';
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                hideLoading();
+
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.token;
+                    localStorage.setItem('favbox-auth-token', authToken);
+                    showMainScreen();
+                    loadBookmarks();
+                    errorDiv.innerHTML = '';
+                } else {
+                    errorDiv.innerHTML = '<div class="error">❌ Geçersiz kullanıcı bilgileri</div>';
+                }
+            } catch (error) {
+                hideLoading();
+                errorDiv.innerHTML = '<div class="error">🔴 Sunucuya bağlanılamadı</div>';
+                console.error('Login error:', error);
+            }
+        }
+
+        function logout() {
+            authToken = null;
+            localStorage.removeItem('favbox-auth-token');
+            bookmarks = [];
+            showLoginScreen();
+            showMessage('👋 Çıkış yapıldı', 'success');
+        }
+
+        // API çağrıları
+        async function makeAuthRequest(url, options = {}) {
+            return fetch(url, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+        }
+
+        async function loadBookmarks() {
+            try {
+                const response = await makeAuthRequest('/api/bookmarks');
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+
+                if (response.ok) {
+                    bookmarks = await response.json();
+                    filteredBookmarks = [...bookmarks];
+                    renderBookmarks();
+                    updateStats();
+                } else {
+                    showMessage('📡 Linkler yüklenirken hata oluştu');
+                }
+            } catch (error) {
+                showMessage('🔴 Bağlantı hatası');
+                console.error('Load bookmarks error:', error);
+            }
+        }
+
+        async function addBookmark() {
+            const url = document.getElementById('url-input').value.trim();
+            const title = document.getElementById('title-input').value.trim();
+            const description = document.getElementById('description-input').value.trim();
+            const tags = document.getElementById('tags-input').value.trim();
+
+            if (!url) {
+                showMessage('🔗 URL gerekli');
+                return;
+            }
+
+            // URL validation
+            try {
+                new URL(url);
+            } catch {
+                showMessage('❌ Geçerli bir URL girin');
+                return;
+            }
+
+            const addBtn = document.getElementById('add-btn');
+            const originalText = addBtn.textContent;
+            addBtn.textContent = '⏳ Ekleniyor...';
+            addBtn.disabled = true;
+
+            try {
+                const response = await makeAuthRequest('/api/bookmarks', {
+                    method: 'POST',
+                    body: JSON.stringify({ url, title, description, tags })
+                });
+
+                if (response.ok) {
+                    // Formu temizle
+                    document.getElementById('url-input').value = '';
+                    document.getElementById('title-input').value = '';
+                    document.getElementById('description-input').value = '';
+                    document.getElementById('tags-input').value = '';
+                    
+                    showMessage('✅ Link başarıyla eklendi!', 'success');
+                    loadBookmarks();
+                } else {
+                    const errorData = await response.json();
+                    showMessage('❌ ' + (errorData.error || 'Link eklenirken hata oluştu'));
+                }
+            } catch (error) {
+                showMessage('🔴 Bağlantı hatası');
+                console.error('Add bookmark error:', error);
+            } finally {
+                addBtn.textContent = originalText;
+                addBtn.disabled = false;
+            }
+        }
+
+        async function deleteBookmark(id) {
+            if (!confirm('🗑️ Bu linki silmek istediğinizden emin misiniz?')) return;
+
+            try {
+                const response = await makeAuthRequest(`/api/bookmarks/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showMessage('🗑️ Link silindi', 'success');
+                    loadBookmarks();
+                } else {
+                    showMessage('❌ Silme işlemi başarısız');
+                }
+            } catch (error) {
+                showMessage('🔴 Bağlantı hatası');
+                console.error('Delete bookmark error:', error);
+            }
+        }
+
+        function searchBookmarks(query) {
+            if (!query.trim()) {
+                filteredBookmarks = [...bookmarks];
+            } else {
+                const searchTerm = query.toLowerCase();
+                filteredBookmarks = bookmarks.filter(bookmark => 
+                    bookmark.url.toLowerCase().includes(searchTerm) ||
+                    (bookmark.title && bookmark.title.toLowerCase().includes(searchTerm)) ||
+                    (bookmark.description && bookmark.description.toLowerCase().includes(searchTerm)) ||
+                    (bookmark.tags && bookmark.tags.toLowerCase().includes(searchTerm))
+                );
+            }
+            renderBookmarks();
+        }
+
+        function updateStats() {
+            document.getElementById('bookmark-count').textContent = `📊 ${bookmarks.length} link kayıtlı`;
+            if (bookmarks.length > 0) {
+                const latest = new Date(Math.max(...bookmarks.map(b => new Date(b.created_at))));
+                document.getElementById('last-updated').textContent = `Son: ${latest.toLocaleDateString('tr-TR')}`;
+            }
+        }
+
+        function renderBookmarks() {
+            const container = document.getElementById('bookmarks-container');
+            
+            if (filteredBookmarks.length === 0) {
+                container.innerHTML = '<div class="card loading">📭 Henüz link bulunmuyor.</div>';
+                return;
+            }
+
+            container.innerHTML = filteredBookmarks.map(bookmark => `
+                <div class="card bookmark-item">
+                    <a href="${bookmark.url}" target="_blank" class="bookmark-url" rel="noopener noreferrer">
+                        ${bookmark.url}
+                    </a>
+                    ${bookmark.title && bookmark.title !== bookmark.url ? 
+                        `<div class="bookmark-title">${escapeHtml(bookmark.title)}</div>` : ''
+                    }
+                    ${bookmark.description ? 
+                        `<div class="bookmark-description">${escapeHtml(bookmark.description)}</div>` : ''
+                    }
+                    ${bookmark.tags ? 
+                        `<div class="bookmark-tags">
+                            ${bookmark.tags.split(',').map(tag => 
+                                `<span class="tag">${escapeHtml(tag.trim())}</span>`
+                            ).join('')}
+                        </div>` : ''
+                    }
+                    <div class="bookmark-actions">
+                        <small>📅 ${new Date(bookmark.created_at).toLocaleDateString('tr-TR', { 
+                            day: 'numeric', 
+                            month: 'short', 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                        })}</small>
+                        <button class="btn btn-danger btn-small" onclick="deleteBookmark(${bookmark.id})">
+                            🗑️ Sil
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + Enter to add bookmark
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                if (document.getElementById('main-screen').style.display !== 'none') {
+                    addBookmark();
+                }
+            }
+            
+            // Escape to clear search
+            if (e.key === 'Escape') {
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) {
+                    searchInput.value = '';
+                    searchBookmarks('');
+                }
+            }
+        });
+
+        // iOS viewport fixes
+        function setViewportHeight() {
+            let vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+
+        window.addEventListener('resize', setViewportHeight);
+        window.addEventListener('orientationchange', setViewportHeight);
+        setViewportHeight();
+    </script>
+</body>
+</html>
